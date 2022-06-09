@@ -1,0 +1,38 @@
+version: "3.7"
+services:
+  
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: web.Dockerfile
+    ports:
+      - 8080:80
+    restart: on-failure
+  
+  db:
+    # Pull the latest 'postgres' image
+    image: "postgres"
+    container_name: "mldb"
+    # Postgres environment parameters and creating volumes to keep data saved in local
+    volumes:
+      # - 
+    # Create environment
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD="Password"
+    # Bind mount the default Postgres port
+    ports:
+      - 5432:5432
+    
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: service.Dockerfile
+    ports:
+      - 5000:5000
+    restart: on-failure
+
+#MOUNTING VOLUMES
+volumes:
+  mldb-database:
+    
