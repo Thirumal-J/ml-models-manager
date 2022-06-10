@@ -117,3 +117,6 @@ dmypy.json
 # CSV files
 .CSV
 .xlsx
+
+# Avoid pushing virtual environments
+mlflow-env/
