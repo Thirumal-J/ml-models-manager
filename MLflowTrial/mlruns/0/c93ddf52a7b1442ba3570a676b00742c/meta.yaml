@@ -1,0 +1,15 @@
+artifact_uri: /home/operation/ML_Software_Development/Backend/Datasets/test_scania.csv/c93ddf52a7b1442ba3570a676b00742c/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+name: ''
+run_id: c93ddf52a7b1442ba3570a676b00742c
+run_uuid: c93ddf52a7b1442ba3570a676b00742c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1659682363
+status: 1
+tags: []
+user_id: operation

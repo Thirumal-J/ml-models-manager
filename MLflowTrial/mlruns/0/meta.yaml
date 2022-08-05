@@ -1,0 +1,4 @@
+artifact_location: /home/operation/ML_Software_Development/Backend/Datasets/test_scania.csv
+experiment_id: '0'
+lifecycle_stage: active
+name: scania-experiment

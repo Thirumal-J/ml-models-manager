@@ -116,7 +116,12 @@ dmypy.json
 
 # CSV files
 .CSV
+.csv
 .xlsx
 
 # Avoid pushing virtual environments
 mlflow-env/
+Datasets/
+mlapp-env/
+test/
+MLflowTrial/
