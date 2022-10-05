@@ -8,10 +8,13 @@ PORT_FOR_MLFLOW = "5000"
 #Upload Service Configurations
 DATASET_FOLDER_LOCATION = "/home/operation/ML_Software_Development/Backend/Datasets"
 
-#MLflow URLs
-GET_EXPERIMENTS_LIST = "api/2.0/mlflow/experiments/list"
-GET_EXPERIMENT_BY_ID = "api/2.0/mlflow/experiments/get"
-SEARCH_RUNS_BY_EXP_ID = "api/2.0/mlflow/runs/search"
-CREATE_EXPERIMENT = "api/2.0/mlflow/experiments/create"
-CREATE_RUN = "api/2.0/mlflow/runs/create"
+#MLflow Runs Folder Location
+MLFLOW_RUNS_LOCATION = "/home/operation/ML_Software_Development/Backend/mlruns"
 
+#MLflow Model Pickle File folder location
+TEMP_PICKLE_FILE_LOCATION = "/home/operation/ML_Software_Development/Backend/ModelRegistry/model.pkl"
+
+ML_FLOW_TRACKING_URI = "/home/operation/ML_Software_Development/Backend/mlruns"
+
+#Place to store all experiment models to deploy
+ML_MODEL_REGISTRY_LOCATION = "/home/operation/ML_Software_Development/Backend/ModelRegistry"
