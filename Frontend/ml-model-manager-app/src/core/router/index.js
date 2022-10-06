@@ -1,4 +1,4 @@
-import { Navigate, useRoutes, Redirect} from 'react-router-dom';
+import { Navigate, useRoutes} from 'react-router-dom';
 import NavBar from '../../layout/navBar';
 import Dashboard from '../../modules/dashboard';
 import DeployedModels from '../../modules/deployedModels';
@@ -36,7 +36,7 @@ export default function Router() {
         },
         {
             path: '*',
-            element: <Redirect to='/app/dashboard'/>
+            element: <Navigate to='/app/dashboard'/>
         }
     ])
 }
