@@ -12,7 +12,7 @@ DATASET_FOLDER_LOCATION = "/home/operation/ML_Software_Development/Backend/Datas
 MLFLOW_RUNS_LOCATION = "/home/operation/ML_Software_Development/Backend/mlruns"
 
 #MLflow Model Pickle File folder location
-TEMP_PICKLE_FILE_LOCATION = "/home/operation/ML_Software_Development/Backend/ModelRegistry/model.pkl"
+TEMP_PICKLE_FILE_LOCATION = "/home/operation/ML_Software_Development/Backend/Utils/test/model.pkl"
 
 ML_FLOW_TRACKING_URI = "/home/operation/ML_Software_Development/Backend/mlruns"
 
