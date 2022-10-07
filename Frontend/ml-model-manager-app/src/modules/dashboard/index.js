@@ -1,6 +1,9 @@
 
 export default function Dashboard() {
-    return(
-        "Hello Dashboard!!!"
+    console.log("callledddd----->>>>>")
+    return (
+        <div>
+            "Hello Dashboard!!!"
+            </div>
     )
 }

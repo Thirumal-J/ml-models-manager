@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { NavLink as RouterLink, matchPath, useLocation } from 'react-router-dom';
-import { Box, List, ListItemText } from '@mui/material';
+import {Navigate, NavLink as RouterLink, matchPath, Link } from 'react-router-dom';
+import { Box, List, ListItemText, ListItemButton } from '@mui/material';
 
 const navConfig = [
   {
@@ -25,34 +25,32 @@ const navConfig = [
   }
 ];
 
-function NavItem({ item, active }) {
+function NavItem({ item }) {
     const { title, path } = item;
-    const isActiveRoot = active(path);
-
-    const [open, setOpen] = useState(isActiveRoot);
-
-    const handleOpen = () => {
-        setOpen((prev) => !prev);
-    };
+    
 
 return(
     <>
-         <ListItemText disableTypography primary={title} />
+       <ListItemButton
+      component={RouterLink}
+      to={path}
+    >
+      <ListItemText disableTypography primary={title} />
+    </ListItemButton>
     </>
 
 )
 }
 
 export default function NavBar() {
-  const { pathname } = useLocation();
+//   const { pathname } = useLocation();
 
-  const match = (path) => (path ? !!matchPath({ path, end: false }, pathname) : false);
-
+//   const match = (path) => (path ? !!matchPath({ path, end: false }, pathname) : false);
   return (
     <Box>
       <List>
         {navConfig.map((item) => (
-          <NavItem key={item.title} item={item} active={match} />
+          <NavItem key={item.title} item={item} />
         ))}
       </List>
     </Box>

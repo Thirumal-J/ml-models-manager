@@ -1,4 +1,4 @@
-import { Navigate, useRoutes} from 'react-router-dom';
+import { Navigate, useRoutes, BrowserRouter, Routes, Route} from 'react-router-dom';
 import NavBar from '../../layout/navBar';
 import Dashboard from '../../modules/dashboard';
 import DeployedModels from '../../modules/deployedModels';
@@ -6,7 +6,7 @@ import ExperimentList from '../../modules/experimentList';
 import ModelTraining from '../../modules/modelTraining';
 
 
-export default function Router() {
+export default function Routers() {
     return useRoutes([
         {
             path: '/app',
@@ -17,15 +17,15 @@ export default function Router() {
                     element: <Dashboard />
                 },
                 {
-                    path: '/model-training',
+                    path: 'model-training',
                     element: <ModelTraining />
                 },
                 {
-                    path: '/experiment-list',
+                    path: 'experiment-list',
                     element: <ExperimentList />
                 },
                 {
-                    path: '/deployed-models',
+                    path: 'deployed-models',
                     element: <DeployedModels />
                 }
             ]
@@ -39,4 +39,13 @@ export default function Router() {
             element: <Navigate to='/app/dashboard'/>
         }
     ])
+    // <BrowserRouter>
+    //     <Routes>
+    //         <Route path='/app/dashboard' component={<Dashboard/>}/>
+    //         <Route path='/app/model-training' component={<ModelTraining/>}/>
+    //         {/* <Route path='/' component={<Dashboard/>}/> */}
+    //         {/* <Route path='/' component={<Dashboard/>}/> */}
+
+    //     </Routes>
+    // </BrowserRouter>
 }
