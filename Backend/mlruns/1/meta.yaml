@@ -1,0 +1,4 @@
+artifact_location: file:///home/operation/ML_Software_Development/Backend/mlruns/1
+experiment_id: '1'
+lifecycle_stage: active
+name: scania-experiment-new

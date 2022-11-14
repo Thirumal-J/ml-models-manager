@@ -1,0 +1,15 @@
+version: "3.7"
+services:
+  db:
+    # Pull the latest 'postgres' image
+    image: "postgres"
+    container_name: "mldb"
+    # Postgres environment parameters and creating volumes to keep data saved in local
+    # Create environment
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD="Password"
+    # Bind mount the default Postgres port
+    ports:
+      - 5432:5432
+    

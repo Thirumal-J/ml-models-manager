@@ -1,0 +1,52 @@
+[
+    {
+        "_artifact_location": "file:///home/operation/ML_Software_Development/Backend/mlruns/1",
+        "_experiment_id": "1",
+        "_lifecycle_stage": "active",
+        "_name": "scania-experiment-2",
+        "_tags": {
+            "dataset_path": "",
+            "experiment_type": "classification"
+        }
+    },
+    {
+        "_artifact_location": "file:///home/operation/ML_Software_Development/Backend/mlruns/0",
+        "_experiment_id": "0",
+        "_lifecycle_stage": "active",
+        "_name": "scania-experiment-1",
+        "_tags": {
+            "dataset_path": "",
+            "experiment_type": "classification"
+        }
+    },
+    {
+        "_artifact_location": "file:///home/operation/ML_Software_Development/Backend/mlruns/2",
+        "_experiment_id": "2",
+        "_lifecycle_stage": "active",
+        "_name": "scania-experiment-3",
+        "_tags": {
+            "dataset_path": "/home/operation/ML_Software_Development/Backend/data/test_scania.csv",
+            "experiment_type": "classification"
+        }
+    },
+    {
+        "_artifact_location": "file:///home/operation/ML_Software_Development/Backend/mlruns/3",
+        "_experiment_id": "3",
+        "_lifecycle_stage": "active",
+        "_name": "scania-experiment-4",
+        "_tags": {
+            "dataset_path": "/home/operation/ML_Software_Development/Backend/data/test_scania.csv",
+            "experiment_type": "classification"
+        }
+    },
+    {
+        "_artifact_location": "file:///home/operation/ML_Software_Development/Backend/mlruns/4",
+        "_experiment_id": "4",
+        "_lifecycle_stage": "active",
+        "_name": "surface_cracking",
+        "_tags": {
+            "dataset_path": "/home/operation/ML_Software_Development/Backend/data/test_scania.csv",
+            "experiment_type": "regression"
+        }
+    }
+]
