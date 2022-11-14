@@ -1,0 +1,1 @@
+export const UPDATE_COUNT = "@STATE/UPDATE_COUNT"

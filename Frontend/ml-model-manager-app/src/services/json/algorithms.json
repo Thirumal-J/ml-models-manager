@@ -1,0 +1,14 @@
+{
+    "classification": [
+        "K-Nearest Neighbours Classification",
+        "Decision Tree Classification",
+        "Naive Bayes Classification",
+        "Random Forest Classification"
+    ],
+    "regression": [
+        "Simple Linear Regression",
+        "Multiple Linear Regression",
+        "Decision Tree Regression",
+        "Random Forest Regression"
+    ]
+}

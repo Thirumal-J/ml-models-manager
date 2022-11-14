@@ -1,0 +1,14 @@
+[
+    {
+        "experimentId": "1",
+        "experimentName": "scania trucks",
+        "runId": "dshdojdoejowjeo",
+        "runName": "scania_rf"
+    },
+    {
+        "experimentId": "2",
+        "experimentName": "APS",
+        "runId": "daohdiashd",
+        "runName": "aps_KNN"
+    }
+]

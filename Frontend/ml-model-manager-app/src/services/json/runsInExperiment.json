@@ -1,0 +1,31 @@
+[
+    {
+        "experimentId": "1",
+        "experimentName": "scania trucks",
+        "runId": "dshdojdoejowjeo",
+        "runName": "scania_rf",
+        "algorithmUsed": "random forest",
+        "accuracy": "94%",
+        "RMSE": "0.203",
+        "R2": "0.203",
+        "MAE": "0.041",
+        "startTime": "6 days ago",
+        "duration": "2.3 min",
+        "deploymentStatus": "not deployed"
+    },
+    {
+        "experimentId": "2",
+        "experimentName": "APS",
+        "runId": "daohdiashd",
+        "runName": "aps_KNN",
+        "algorithmUsed": "KNN",
+        "accuracy": "92%",
+        "RMSE": "0.21",
+        "R2": "0.23",
+        "MAE": "0.053",
+        "startTime": "3 days ago",
+        "duration": "4.1 min",
+        "deploymentStatus": "deployed",
+        "classification":"classification"
+    }
+]
