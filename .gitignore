@@ -120,11 +120,9 @@ dmypy.json
 .xlsx
 
 # Avoid pushing virtual environments
-mlflow-env/
+mlapp_venv/
 Datasets/
-mlapp-env/
 test/
-MLflowTrial/
 
 
 

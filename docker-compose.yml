@@ -1,15 +1,18 @@
-version: "3.7"
+version: "3"
+
 services:
-  db:
-    # Pull the latest 'postgres' image
-    image: "postgres"
-    container_name: "mldb"
-    # Postgres environment parameters and creating volumes to keep data saved in local
-    # Create environment
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD="Password"
-    # Bind mount the default Postgres port
+  
+  core:
+    build: 
+      context: ./Backend/src/core
+      dockerfile: core.dockerfile
     ports:
-      - 5432:5432
+        - "${PORTMLFLOW}:${PORTMLFLOW}"
+
+  classification:
+    build: 
+      context: ./Backend/src/pipelines/classification
+      dockerfile: classification.dockerfile
+    ports:
+        - "${PORTCLASSIFICATION}:${PORTCLASSIFICATION}"
     

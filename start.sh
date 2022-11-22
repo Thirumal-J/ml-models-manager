@@ -1,4 +1,4 @@
 #!/bin/bash
-source "MLflowTrial/mlflow-env/bin/activate"
+source "mlapp_venv/bin/activate"
 cd Backend
-python Utils/utils.py
+python3 api.py

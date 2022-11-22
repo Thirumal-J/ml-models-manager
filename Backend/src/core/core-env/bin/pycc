@@ -1,0 +1,3 @@
+#!/home/thiru/ML_Software_Development/Backend/src/core/core-env/bin/python3
+from numba.pycc import main
+main()
