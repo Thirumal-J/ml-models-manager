@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import os, sys
 sys.path.append("/home/thiru/ML_Software_Development/Backend")
-import config as appConf
+import classification_config as appConf
 import pandas as pd
 # from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, f1_score, precision_score, recall_score, mean_squared_error, r2_score, mean_absolute_error
@@ -17,7 +17,7 @@ import pickle
 import mlflow
 import shutil
 
-import preprocessing as preprocessing
+import src.pipelines.classification.preprocessing as preprocessing
 
 app = Flask(__name__)
 app.config['FILE_UPLOADS'] = appConf.DATASET_FOLDER_LOCATION

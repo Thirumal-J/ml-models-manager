@@ -5,7 +5,7 @@ import sys
 sys.path.append("/home/thiru/ML_Software_Development/Backend")
 import shutil
 
-import core_config as appConf
+import config as appConf
 import mlflow
 from flask import Flask, jsonify, request
 

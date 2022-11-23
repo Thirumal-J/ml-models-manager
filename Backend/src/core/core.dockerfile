@@ -1,8 +1,6 @@
 FROM python:3.8
 WORKDIR /mlapp/core
-COPY requirements.txt .
-#RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
-RUN ls
+COPY core/. .
+ADD /config.py .
+RUN pip install -r requirements.txt
 CMD [ "python3", "api.py" ]

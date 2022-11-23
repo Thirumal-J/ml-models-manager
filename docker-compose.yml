@@ -2,17 +2,23 @@ version: "3"
 
 services:
   
-  core:
-    build: 
-      context: ./Backend/src/core
-      dockerfile: core.dockerfile
-    ports:
-        - "${PORTMLFLOW}:${PORTMLFLOW}"
+  # core:
+  #   build: 
+  #     context: ./Backend/src
+  #     dockerfile: "core/core.dockerfile"
+  #   ports:
+  #       - "${PORT_MLFLOW}:${PORT_MLFLOW}"
+  #   volumes:
+  #       - mymlruns:${SHARED_VOLUME}
 
   classification:
     build: 
-      context: ./Backend/src/pipelines/classification
-      dockerfile: classification.dockerfile
+      context: ./Backend/src
+      dockerfile: "pipelines/classification/classification.dockerfile"
     ports:
-        - "${PORTCLASSIFICATION}:${PORTCLASSIFICATION}"
+        - "${PORT_CLASSIFICATION}:${PORT_CLASSIFICATION}"
+    volumes:
+        - mymlruns:${SHARED_VOLUME}
     
+volumes:
+  mymlruns:
