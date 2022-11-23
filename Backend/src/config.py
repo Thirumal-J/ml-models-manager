@@ -11,7 +11,7 @@ MLFLOW_RUNS_LOCATION = "/mlapp/mlruns"
 
 # MLflow Model Pickle File folder location
 # TEMP_PICKLE_FILE_LOCATION = "/home/operation/ML_Software_Development/Backend/Utils/test/model.pkl"
-TEMP_PICKLE_FILE_LOCATION = "/mlapp/temp/model.pkl"
+TEMP_PICKLE_FILE_LOCATION = "/mlapp/temp"
 
 # ML_FLOW_TRACKING_URI = "/home/operation/ML_Software_Development/Backend/mlruns"
 ML_FLOW_TRACKING_URI = "/mlapp/mlruns"

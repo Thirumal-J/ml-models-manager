@@ -59,6 +59,7 @@ def train_model():
 	#Create Experiment
 	global target_dataset_path
 	tags = {"dataset_path":target_dataset_path}
+	mlflow.end_run()
 	experiment_id = mlflow.create_experiment(input['experiment_name'],tags=tags)
 	input["version"] = '0'
 	input["experiment_id"] = experiment_id
@@ -74,7 +75,7 @@ def re_train_model():
 	input = json.loads(request.data)
 	#input - existing experiment name and id, chosen algorithm name, target variable, flag whether new dataset is uploaded or not
 	global target_dataset_path
-
+	mlflow.end_run()
 	latest_run = mlflow.search_runs(experiment_ids=[input['experiment_id']])
 	# input["version"] = str(int(latest_run.data.tags['version'])+1)
 	# run_tags = [{"run_version": input["version"]}]
@@ -86,6 +87,11 @@ def re_train_model():
 # function to save the uploaded dataset file
 def save_file(request):
 	uploaded_file = request.files['filename'] # This line uses the same variable and worked fine
+	print(f"--Uploaded file name---> {uploaded_file.filename}")
+	print(f"--Current directory---> {os.getcwd()}")
+	print(f"--Is directory exists or not --> {os.path.exists(app.config['FILE_UPLOADS'])}")
+	if not os.path.exists(app.config['FILE_UPLOADS']):
+		os.mkdir(app.config['FILE_UPLOADS'])
 	filepath = os.path.join(app.config['FILE_UPLOADS'], uploaded_file.filename)
 	uploaded_file.save(filepath)
 	global target_dataset_path
@@ -109,8 +115,13 @@ def get_model_results(algorithmName, X_train_balanced, X_test, y_train_balanced,
 	classifier.fit(X_train_balanced, y_train_balanced)
 
 	#Predict the result
-	pickle.dump(classifier, open(appConf.TEMP_PICKLE_FILE_LOCATION, 'wb'))
-	pickled_model = pickle.load(open(appConf.TEMP_PICKLE_FILE_LOCATION, 'rb'))
+	print(f"--Current directory---> {os.getcwd()}")
+	print(f"--Is directory exists or not --> {os.path.exists(appConf.TEMP_PICKLE_FILE_LOCATION)}")
+	if not os.path.exists(appConf.TEMP_PICKLE_FILE_LOCATION):
+		os.makedirs(appConf.TEMP_PICKLE_FILE_LOCATION)
+	temp_pickle_file = appConf.TEMP_PICKLE_FILE_LOCATION+"/model.pkl"
+	pickle.dump(classifier, open(temp_pickle_file, 'wb'))
+	pickled_model = pickle.load(open(temp_pickle_file, 'rb'))
 	predicted_result = pickled_model.predict(X_test)
 	print("predicted_result-->",predicted_result)
     # classifier_report = classification_report(y_test, predicted_result, output_dict=True)
@@ -152,4 +163,8 @@ def create_mlflow_run(input, run_tags):
 	return run.to_dictionary()
 
 if __name__ == '__main__':
+	if not os.path.exists(appConf.ML_FLOW_TRACKING_URI):
+		os.makedirs(appConf.ML_FLOW_TRACKING_URI)
+	tracking_uri = f"file://{appConf.ML_FLOW_TRACKING_URI}"
+	mlflow.set_tracking_uri(tracking_uri)
 	app.run(host=appConf.HOSTNAME,port=appConf.PORT_CLASSIFICATION,debug=True)
