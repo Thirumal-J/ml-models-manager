@@ -117,8 +117,8 @@ def get_model_results(algorithmName, X_train_balanced, X_test, y_train_balanced,
 	#Predict the result
 	print(f"--Current directory---> {os.getcwd()}")
 	print(f"--Is directory exists or not --> {os.path.exists(appConf.TEMP_PICKLE_FILE_LOCATION)}")
-	if not os.path.exists(appConf.TEMP_PICKLE_FILE_LOCATION):
-		os.makedirs(appConf.TEMP_PICKLE_FILE_LOCATION)
+	# if not os.path.exists(appConf.TEMP_PICKLE_FILE_LOCATION):
+	# 	os.makedirs(appConf.TEMP_PICKLE_FILE_LOCATION)
 	temp_pickle_file = appConf.TEMP_PICKLE_FILE_LOCATION+"/model.pkl"
 	pickle.dump(classifier, open(temp_pickle_file, 'wb'))
 	pickled_model = pickle.load(open(temp_pickle_file, 'rb'))
@@ -163,8 +163,5 @@ def create_mlflow_run(input, run_tags):
 	return run.to_dictionary()
 
 if __name__ == '__main__':
-	if not os.path.exists(appConf.ML_FLOW_TRACKING_URI):
-		os.makedirs(appConf.ML_FLOW_TRACKING_URI)
-	tracking_uri = f"file://{appConf.ML_FLOW_TRACKING_URI}"
-	mlflow.set_tracking_uri(tracking_uri)
+	print(f"---Tracking Uri ---> {mlflow.get_tracking_uri()}")
 	app.run(host=appConf.HOSTNAME,port=appConf.PORT_CLASSIFICATION,debug=True)

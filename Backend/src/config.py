@@ -2,23 +2,23 @@
 HOSTNAME = "0.0.0.0"
 
 # Upload Service Configurations
-# DATASET_FOLDER_LOCATION = "/home/operation/ML_Software_Development/Backend/src/data"
-DATASET_FOLDER_LOCATION = "/mlapp/data"
+DATASET_FOLDER_LOCATION = "/data"
+# DATASET_FOLDER_LOCATION = "/mlapp/data"
 
 # MLflow Runs Folder Location
-# MLFLOW_RUNS_LOCATION = "/home/operation/ML_Software_Development/Backend/mlruns"
-MLFLOW_RUNS_LOCATION = "/mlapp/mlruns"
+MLFLOW_RUNS_LOCATION = "/mlruns"
+# MLFLOW_RUNS_LOCATION = "/mlapp/mlruns"
 
 # MLflow Model Pickle File folder location
-# TEMP_PICKLE_FILE_LOCATION = "/home/operation/ML_Software_Development/Backend/Utils/test/model.pkl"
-TEMP_PICKLE_FILE_LOCATION = "/mlapp/temp"
+TEMP_PICKLE_FILE_LOCATION = "/temp"
+# TEMP_PICKLE_FILE_LOCATION = "/mlapp/temp"
 
 # ML_FLOW_TRACKING_URI = "/home/operation/ML_Software_Development/Backend/mlruns"
-ML_FLOW_TRACKING_URI = "/mlapp/mlruns"
+# ML_FLOW_TRACKING_URI = "/mlapp/mlruns"
 
 # Place to store all experiment models to deploy
-# ML_MODEL_REGISTRY_LOCATION = "/home/operation/ML_Software_Development/Backend/ModelRegistry"
-ML_MODEL_REGISTRY_LOCATION = "/mlapp/modelregistry"
+ML_MODEL_REGISTRY_LOCATION = "/model-registry"
+# ML_MODEL_REGISTRY_LOCATION = "/mlapp/modelregistry"
 
 
 #---------------------------------------------------------------------------------------------------------------------------------#
