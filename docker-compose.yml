@@ -2,29 +2,36 @@ version: "3"
 
 services:
   
-  core:
-    build: 
+  backend:
+    build:
       context: ./Backend/src
-      dockerfile: "core/core.dockerfile"
-    environment:
-        - PYTHONUNBUFFERED=1
-    ports:
-        - "${PORT_MLFLOW}:${PORT_MLFLOW}"
-    volumes:
+      dockerfile: "backend.dockerfile"
+      volumes:
         - mymlruns:${SHARED_VOLUME}
-    restart: always
 
-  classification:
-    build: 
-      context: ./Backend/src
-      dockerfile: "pipelines/classification/classification.dockerfile"
-    environment:
-        - PYTHONUNBUFFERED=1
-    ports:
-        - "${PORT_CLASSIFICATION}:${PORT_CLASSIFICATION}"
-    volumes:
-        - mymlruns:${SHARED_VOLUME}
-    restart: always
+  # core:
+  #   build: 
+  #     context: ./Backend/src
+  #     dockerfile: "core/core.dockerfile"
+  #   environment:
+  #       - PYTHONUNBUFFERED=1
+  #   ports:
+  #       - "${PORT_MLFLOW}:${PORT_MLFLOW}"
+  #   volumes:
+  #       - mymlruns:${SHARED_VOLUME}
+  #   restart: always
+
+  # classification:
+  #   build: 
+  #     context: ./Backend/src
+  #     dockerfile: "pipelines/classification/classification.dockerfile"
+  #   environment:
+  #       - PYTHONUNBUFFERED=1
+  #   ports:
+  #       - "${PORT_CLASSIFICATION}:${PORT_CLASSIFICATION}"
+  #   volumes:
+  #       - mymlruns:${SHARED_VOLUME}
+  #   restart: always
     
 volumes:
   mymlruns:

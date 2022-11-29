@@ -121,7 +121,8 @@ dmypy.json
 .xlsx
 
 # Avoid pushing virtual environments
-mlapp_venv/
+core-venv/
+classification-venv/
 Datasets/
 test/
 
