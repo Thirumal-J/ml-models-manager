@@ -69,7 +69,13 @@ def delete_experiment():
 
     input = json.loads(request.data)
     mlruns_abs_path = utils.getMLRunsAbsPath()
-    delete_experiment_directory = mlruns_abs_path + input["experiment_id"]
+    delete_experiment_directory = mlruns_abs_path + "/" + input["experiment_id"]
+    trash_experiment_directory = mlruns_abs_path + "/.trash"
+    print(f"<--- delete_experiment_directory --> {delete_experiment_directory}")
+    if os.path.exists(trash_experiment_directory):
+        run = mlflow.active_run()
+        mlflow.end_run()
+        shutil.rmtree(trash_experiment_directory)
     if os.path.exists(delete_experiment_directory):
         run = mlflow.active_run()
         mlflow.end_run()
@@ -102,6 +108,7 @@ def register_model():
     )
 
     if os.path.exists(experiment_run_location):
+        print(f"\n <--- Experiment Model Location ---> {experiment_run_location}")
         src_model_file_location = f"{experiment_run_location}/artifacts/model.pkl"
 
         if os.path.exists(src_model_file_location):

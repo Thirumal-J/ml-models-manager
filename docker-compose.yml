@@ -2,36 +2,46 @@ version: "3"
 
 services:
   
-  backend:
-    build:
+  # backend:
+  #   build:
+  #     context: ./Backend/src
+  #     dockerfile: "backend.dockerfile"
+  #   volumes:
+  #       - mymlruns
+
+  core:
+    build: 
       context: ./Backend/src
-      dockerfile: "backend.dockerfile"
-      volumes:
+      dockerfile: "core/core.dockerfile"
+    environment:
+        - PYTHONUNBUFFERED=1
+    ports:
+        - "${PORT_MLFLOW}:${PORT_MLFLOW}"
+    volumes:
         - mymlruns:${SHARED_VOLUME}
+    networks:
+        - mlapp-net
+    restart: always
 
-  # core:
-  #   build: 
-  #     context: ./Backend/src
-  #     dockerfile: "core/core.dockerfile"
-  #   environment:
-  #       - PYTHONUNBUFFERED=1
-  #   ports:
-  #       - "${PORT_MLFLOW}:${PORT_MLFLOW}"
-  #   volumes:
-  #       - mymlruns:${SHARED_VOLUME}
-  #   restart: always
+  classification:
+    build: 
+      context: ./Backend/src
+      dockerfile: "pipelines/classification/classification.dockerfile"
+    environment:
+        - PYTHONUNBUFFERED=1
+    ports:
+        - "${PORT_CLASSIFICATION}:${PORT_CLASSIFICATION}"
+    volumes:
+        - mymlruns:${SHARED_VOLUME}
+    depends_on:
+        - core
+    networks:
+        - mlapp-net
+    restart: always
 
-  # classification:
-  #   build: 
-  #     context: ./Backend/src
-  #     dockerfile: "pipelines/classification/classification.dockerfile"
-  #   environment:
-  #       - PYTHONUNBUFFERED=1
-  #   ports:
-  #       - "${PORT_CLASSIFICATION}:${PORT_CLASSIFICATION}"
-  #   volumes:
-  #       - mymlruns:${SHARED_VOLUME}
-  #   restart: always
-    
+networks:
+  mlapp-net:
+    driver: bridge
+
 volumes:
-  mymlruns:
+  mymlruns: 

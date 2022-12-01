@@ -119,6 +119,8 @@ dmypy.json
 .CSV
 .csv
 .xlsx
+*.csv
+*.CSV
 
 # Avoid pushing virtual environments
 core-venv/

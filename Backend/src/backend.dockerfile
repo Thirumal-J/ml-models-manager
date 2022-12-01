@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.7.15-slim
 ARG CACHEBUST=1
 RUN echo "$CACHEBUST"
 WORKDIR /mlapp

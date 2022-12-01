@@ -11,9 +11,9 @@ def isPathExist(inputPath):
     return os.path.exists(inputPath)
 
 
-def getModelRegistryAbsPath():
-    return getParentDirectory(os.getcwd()) + appConf.ML_MODEL_REGISTRY_LOCATION
+def getModelRegistryAbsPath(currentDirectory = os.getcwd()):
+    return getParentDirectory(currentDirectory) + appConf.ML_MODEL_REGISTRY_LOCATION
 
 
-def getMLRunsAbsPath():
-    return getParentDirectory(os.getcwd()) + appConf.MLFLOW_RUNS_LOCATION
+def getMLRunsAbsPath(currentDirectory = os.getcwd()):
+    return getParentDirectory(currentDirectory) + appConf.MLFLOW_RUNS_LOCATION
