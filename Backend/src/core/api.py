@@ -15,18 +15,22 @@ import config as appConf
 import mlflow
 import utils
 from flask import Flask, jsonify, request
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
+CORS(app, support_credentials=True)
 app.config["FILE_UPLOADS"] = appConf.DATASET_FOLDER_LOCATION
 target_dataset_path = ""
 
 
 @app.after_request
-def after_request(response):
-
-    response.headers.add("Access-Control-Allow-Origin", "*")
-    response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
-    response.headers.add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE")
+def add_headers(response):
+    response.headers.add('Content-Type', 'application/json')
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Expose-Headers', 'Content-Type,Content-Length,Authorization,X-Pagination')
+    response.headers.add('preflightContinue', 'false')
     return response
 
 
@@ -41,22 +45,22 @@ def get_algorithms():
 # Fetches all the existing experiments list
 @app.route(appConf.URI_MLFLOW + appConf.URI_EXPERIMENT_LIST, methods=["GET"])
 def get_experiment_list():
-
-    # Retrieve existing MLflow Experiment List
-    all_experiments = [
-        experiment.__dict__
-        for experiment in mlflow.search_experiments(order_by=["name"])
-    ]
-    return jsonify(all_experiments)
+    try:
+        # Retrieve existing MLflow Experiment List
+        all_experiments = [experiment.__dict__
+                           for experiment in mlflow.search_experiments(order_by=["name"])
+                           ]
+        return jsonify(all_experiments)
+    except:
+        return jsonify({"status": "FAILED", "msg": "unable to fetch all experiments, please try again"})
 
 
 # Fetches the experiment details using the id provided by the user
 @app.route(appConf.URI_MLFLOW + appConf.URI_EXPERIMENT, methods=["GET"])
 def get_experiment_by_id():
-
     # Retrieve existing MLflow Experiment
-    experiment_id = request.args.get("experiment_id")
     try:
+        experiment_id = request.args.get("experiment_id")
         experiment = mlflow.get_experiment(experiment_id)
         return experiment.__dict__
     except:
@@ -90,49 +94,54 @@ def delete_experiment():
 # All runs in an experiment
 @app.route(appConf.URI_MLFLOW + appConf.URI_EXPERIMENT_RUNS, methods=["GET"])
 def search_mlflow_runs():
-
-    experiment_id = request.args.get("experiment-id")
-    runs = mlflow.search_runs([experiment_id])
-    return runs.to_dict()
+    try:
+        experiment_id = request.args.get("experiment-id")
+        runs = mlflow.search_runs([experiment_id])
+        return runs.to_dict()
+    except:
+        return jsonify({"status": "FAILED", "msg": "unable to fetch all runs of the experiment"})
 
 
 # Register Model
 @app.route(appConf.URI_MLFLOW + appConf.URI_REGISTER_MODEL, methods=["POST"])
 def register_model():
 
-    input = json.loads(request.data)
-    # Input - Expect a experiment name, run name to deploy the model
-    mlruns_abs_path = utils.getMLRunsAbsPath()
-    experiment_run_location = (
-        f"{mlruns_abs_path}/{input['experiment_id']}/{input['run_id']}"
-    )
+    try:
+        input = json.loads(request.data)
+        # Input - Expect a experiment name, run name to deploy the model
+        mlruns_abs_path = utils.getMLRunsAbsPath()
+        experiment_run_location = (
+            f"{mlruns_abs_path}/{input['experiment_id']}/{input['run_id']}"
+        )
 
-    if os.path.exists(experiment_run_location):
-        print(f"\n <--- Experiment Model Location ---> {experiment_run_location}")
-        src_model_file_location = f"{experiment_run_location}/artifacts/model.pkl"
+        if os.path.exists(experiment_run_location):
+            print(f"\n <--- Experiment Model Location ---> {experiment_run_location}")
+            src_model_file_location = f"{experiment_run_location}/artifacts/model.pkl"
 
-        if os.path.exists(src_model_file_location):
-            register_model_parent_folder = (
-                f"{utils.getModelRegistryAbsPath()}/{input['experiment_id']}"
-            )
-            register_model_child_folder = (
-                f"{register_model_parent_folder}/{input['run_id']}"
-            )
+            if os.path.exists(src_model_file_location):
+                register_model_parent_folder = (
+                    f"{utils.getModelRegistryAbsPath()}/{input['experiment_id']}"
+                )
+                register_model_child_folder = (
+                    f"{register_model_parent_folder}/{input['run_id']}"
+                )
 
-            if os.path.exists(register_model_parent_folder):
-                for f in os.listdir(register_model_parent_folder):
-                    shutil.rmtree(os.path.join(register_model_parent_folder, f))
-                    print(f"-----------	deleted successfully")
-            os.makedirs(register_model_child_folder)
-            destination_model_file = f"{register_model_child_folder}/model.pkl"
-            shutil.copyfile(src_model_file_location, destination_model_file)
-            return jsonify("msg:model registered successfully")
+                if os.path.exists(register_model_parent_folder):
+                    for f in os.listdir(register_model_parent_folder):
+                        shutil.rmtree(os.path.join(register_model_parent_folder, f))
+                        print(f"-----------	deleted successfully")
+                os.makedirs(register_model_child_folder)
+                destination_model_file = f"{register_model_child_folder}/model.pkl"
+                shutil.copyfile(src_model_file_location, destination_model_file)
+                return jsonify("msg:model registered successfully")
+
+            else:
+                return jsonify("msg: no model found in this experiment run")
 
         else:
-            return jsonify("msg: no model found in this experiment run")
-
-    else:
-        return jsonify("msg:no such experiment run exists")
+            return jsonify("msg:no such experiment run exists")
+    except:
+        return jsonify({"status": "FAILED", "msg": "Sorry, unable to register model"})
 
 
 # Retrieve run by run id
@@ -150,27 +159,28 @@ def get_run_by_id():
 # Retrieve all the deployed models
 @app.route(appConf.URI_MLFLOW + appConf.URI_DEPLOYED_MODELS, methods=["GET"])
 def get_deployed_models():
+    try:
+        model_registry_abs_path = utils.getModelRegistryAbsPath()
+        exp_dir_list = os.listdir(model_registry_abs_path)
+        deployed_models = []
 
-    model_registry_abs_path = utils.getModelRegistryAbsPath()
-    exp_dir_list = os.listdir(model_registry_abs_path)
-    deployed_models = []
-
-    for exp in exp_dir_list:
-        deployed_exp_path = os.path.join(model_registry_abs_path, exp)
-        run_dir_list = os.listdir(deployed_exp_path)
-        run_details = (mlflow.get_run(run_dir_list[0])).to_dictionary()
-        exp_details = (mlflow.get_experiment(exp)).__dict__
-        print(f"experiment_dteails----> {exp_details}")
-        run_name = run_details["data"]["tags"]["mlflow.runName"]
-        model = {
-            "exp_id": exp,
-            "exp_name": exp_details["_name"],
-            "run_name": run_name,
-            "run_id": run_dir_list[0],
-        }
-        deployed_models.append(model)
-    return jsonify(deployed_models)
-
+        for exp in exp_dir_list:
+            deployed_exp_path = os.path.join(model_registry_abs_path, exp)
+            run_dir_list = os.listdir(deployed_exp_path)
+            run_details = (mlflow.get_run(run_dir_list[0])).to_dictionary()
+            exp_details = (mlflow.get_experiment(exp)).__dict__
+            print(f"experiment_details----> {exp_details}")
+            run_name = run_details["data"]["tags"]["mlflow.runName"]
+            model = {
+                "exp_id": exp,
+                "exp_name": exp_details["_name"],
+                "run_name": run_name,
+                "run_id": run_dir_list[0],
+            }
+            deployed_models.append(model)
+        return jsonify(deployed_models)
+    except:
+        return jsonify({"msg": "Sorry, unable to retrieve all deployed models"})
 
 def setMLflowTrackingURI():
 

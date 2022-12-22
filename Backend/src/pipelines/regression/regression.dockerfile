@@ -1,8 +1,9 @@
 FROM python:3.8
-WORKDIR /mlapp/classification
-COPY requirements.txt .
-#RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install -r requirements.txt
+ARG CACHEBUST=1
+RUN echo "$CACHEBUST"
+WORKDIR /mlapp
 COPY . .
-RUN ls
-CMD [ "python3", "api.py" ]
+WORKDIR /mlapp/pipelines/regression
+RUN pip3 install --upgrade pip
+RUN pip install -r requirements.txt
+CMD [ "python", "-u", "api.py" ]

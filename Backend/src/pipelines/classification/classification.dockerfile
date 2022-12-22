@@ -4,8 +4,6 @@ RUN echo "$CACHEBUST"
 WORKDIR /mlapp
 COPY . .
 WORKDIR /mlapp/pipelines/classification
-# ADD pipelines/classification/. .
-# ADD /config.py .
 RUN pip3 install --upgrade pip
 RUN pip install -r requirements.txt
 CMD [ "python", "-u", "api.py" ]

@@ -1,6 +1,8 @@
 // import { faker } from '@faker-js/faker';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import {connect} from 'react-redux';
+
 
 // @mui
 import { useTheme } from '@mui/material/styles';
@@ -9,9 +11,11 @@ import { Grid, Container, Typography, Box, Button, Stack } from '@mui/material';
 import Page from '../../components/Page';
 import NewExperimentForm from './newExperimentForm';
 import ExistingExperimentForm from './existingExperimentForm';
-import Api from '../../services/api';
+import api from '../../services/api';
+import { URLPathConstants } from '../../utils';
+import { UPDATE_ALGORITHMS } from '../../core/actions';
 
-export default function ModelTraining() {
+function ModelTraining({algorithms,updateAlgorithms}) {
   const theme = useTheme();
 
   const [newExperimentSelected, setNewExperimentSelected] = useState(false);
@@ -26,22 +30,14 @@ export default function ModelTraining() {
     setExistingExperimentSelected(true);
     setNewExperimentSelected(false);
   };
-
+  
+  async function fetchAlgorithms() {
+    const response = await api(URLPathConstants.FETCH_ALGORITHMS,{method:"get"});
+    updateAlgorithms(response);
+  }
+  
   useEffect(() => {
-    // const fetchAlgorithms = async () => {
-      // const result = await axios(
-      //   'http://127.0.0.1:4000/v1/algorithms', {
-      //   method: 'GET',
-      //   headers: {}
-      // }
-      // ).then(response => {
-      //   console.log(response);
-      // }).catch(error => {
-      //   console.error("Error while fetching algorithms", error)
-      // });
-    // }
-    // fetchAlgorithms();
-    const result = Api("fetchAlgorithms","algorithms.json","Error while fetching algorithms");
+    fetchAlgorithms();
   }, []);
 
   return (
@@ -64,7 +60,7 @@ export default function ModelTraining() {
 
           {newExperimentSelected ?
             <Grid item xs={12} md={6} lg={8}>
-              <NewExperimentForm />
+              <NewExperimentForm algorithms={algorithms}/>
             </Grid>
             : null}
           {existingExperimentSelected ?
@@ -77,3 +73,21 @@ export default function ModelTraining() {
     </Page>
   );
 }
+
+
+const mapStateToProps = (state) => ({
+  algorithms:state.modelTrainingReducer.algorithms
+})
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+      updateAlgorithms: (payload) => {
+          dispatch({
+              type: UPDATE_ALGORITHMS,
+              payload
+          })
+      },
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ModelTraining);

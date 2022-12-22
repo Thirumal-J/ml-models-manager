@@ -2,12 +2,16 @@ version: "3"
 
 services:
   
-  # backend:
-  #   build:
-  #     context: ./Backend/src
-  #     dockerfile: "backend.dockerfile"
+  # api-gateway:
+  #   image: nginx:1.17.10
+  #   container_name: reverse_proxy
+  #   depends_on:
+  #     - core
+  #     - classification
   #   volumes:
-  #       - mymlruns
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+  #   ports:
+  #     - 80:80
 
   core:
     build: 
@@ -21,7 +25,6 @@ services:
         - mymlruns:${SHARED_VOLUME}
     networks:
         - mlapp-net
-    restart: always
 
   classification:
     build: 
@@ -37,7 +40,6 @@ services:
         - core
     networks:
         - mlapp-net
-    restart: always
 
 networks:
   mlapp-net:

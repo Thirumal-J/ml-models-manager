@@ -43,22 +43,20 @@ URI_MLFLOW = "/mlflow"
 # Classification
 PORT_CLASSIFICATION = 5001
 CLASSIFICATION = "classification"
-CLASSIFICATION_ALGORITHMS = [
-        "K-Nearest Neighbours Classification",
-        "Decision Tree Classification",
-        "Naive Bayes Classification",
-        "Random Forest Classification"
-    ]
+DECISION_TREE_CLASSIFICATION = "Decision Tree Classification"
+K_NEAREST_NEIGHBOURS_CLASSIFICATION = "K-Nearest Neighbours Classification"
+NAIVE_BAYES_CLASSIFICATION = "Naive Bayes Classification"
+RANDOM_FOREST_CLASSIFICATION = "Random Forest Classification"
+CLASSIFICATION_ALGORITHMS = [DECISION_TREE_CLASSIFICATION,K_NEAREST_NEIGHBOURS_CLASSIFICATION,NAIVE_BAYES_CLASSIFICATION,RANDOM_FOREST_CLASSIFICATION]
 
 # Regression
 PORT_REGRESSION = 5002
 REGRESSION = "regression"
-REGRESSION_ALGORITHMS = [
-        "Simple Linear Regression",
-        "Multiple Linear Regression",
-        "Decision Tree Regression",
-        "Random Forest Regression"
-    ]
+SIMPLE_LINEAR_REGRESSION = "Simple Linear Regression"
+SUPPORT_VECTOR_REGRESSION = "Support Vector Regression"
+DECISION_TREE_REGRESSION = "Decision Tree Regression"
+RANDOM_FOREST_REGRESSION = "Random Forest Regression"
+REGRESSION_ALGORITHMS = [SIMPLE_LINEAR_REGRESSION,SUPPORT_VECTOR_REGRESSION,DECISION_TREE_REGRESSION,RANDOM_FOREST_REGRESSION]
 
 # Scania
 PORT_SCANIA = 5003
