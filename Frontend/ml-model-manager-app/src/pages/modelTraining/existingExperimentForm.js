@@ -13,7 +13,7 @@ import ExperimentResult from './experimentResult';
 import AllExperimentsJSON from '../../services/json/allExperiments.json';
 import AlgorithmsJSON from '../../services/json/algorithms.json';
 
-const ExistingExperimentForm = ({ color = 'primary', sx }) => {
+const ExistingExperimentForm = ({ color = 'primary', sx, props }) => {
     const navigate = useNavigate();
 
     const [showResult, setShowResult] = useState(false);

@@ -95,6 +95,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+*venv/
 
 # Spyder project settings
 .spyderproject
@@ -118,13 +119,14 @@ dmypy.json
 .CSV
 .csv
 .xlsx
+*.csv
+*.CSV
 
 # Avoid pushing virtual environments
-mlflow-env/
+core-venv/
+classification-venv/
 Datasets/
-mlapp-env/
 test/
-MLflowTrial/
 
 
 

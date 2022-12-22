@@ -1,20 +1,21 @@
 import axios from 'axios';
-import { fetchAlgorithms, fetchAlgorithms2 } from './apiPayloads';
- 
-export default async function Api(apiName, fileName, errorMessage) {
-  let payload = {};
-  
-  if (apiName == "fetchAlgorithms") {
-    payload = fetchAlgorithms;
-  }
-  
-  return await axios(payload)
+import { URLPathConstants } from '../../utils';
+
+export default async function Api(path, payload) {
+
+  const HOST = window.location.hostname;
+  const PORT = (path.includes(URLPathConstants.CLASSIFICATION)) ? 5001 : 5000
+  console.log(`PORT---> ${PORT}`);
+  // const BACKEND_PORT_GET = 5000;
+  // const BACKEND_PORT_POST = 5001;
+  const FINAL_PAYLOAD = {...payload,url:`${window.location.protocol}//${HOST}:${PORT}/${path}`}
+  console.log(`Final Payload --> ${FINAL_PAYLOAD}`)
+  return axios(FINAL_PAYLOAD)
     .then(function (response) {
-      console.log("file where response will be saved", fileName)
-      console.log(response);
+      return response.data;
     })
     .catch(function (error) {
-      console.log(errorMessage, error);
+      console.log(error);
     });
 }
 

@@ -1,15 +1,49 @@
-version: "3.7"
+version: "3"
+
 services:
-  db:
-    # Pull the latest 'postgres' image
-    image: "postgres"
-    container_name: "mldb"
-    # Postgres environment parameters and creating volumes to keep data saved in local
-    # Create environment
+  
+  # api-gateway:
+  #   image: nginx:1.17.10
+  #   container_name: reverse_proxy
+  #   depends_on:
+  #     - core
+  #     - classification
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+  #   ports:
+  #     - 80:80
+
+  core:
+    build: 
+      context: ./Backend/src
+      dockerfile: "core/core.dockerfile"
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD="Password"
-    # Bind mount the default Postgres port
+        - PYTHONUNBUFFERED=1
     ports:
-      - 5432:5432
-    
+        - "${PORT_MLFLOW}:${PORT_MLFLOW}"
+    volumes:
+        - mymlruns:${SHARED_VOLUME}
+    networks:
+        - mlapp-net
+
+  classification:
+    build: 
+      context: ./Backend/src
+      dockerfile: "pipelines/classification/classification.dockerfile"
+    environment:
+        - PYTHONUNBUFFERED=1
+    ports:
+        - "${PORT_CLASSIFICATION}:${PORT_CLASSIFICATION}"
+    volumes:
+        - mymlruns:${SHARED_VOLUME}
+    depends_on:
+        - core
+    networks:
+        - mlapp-net
+
+networks:
+  mlapp-net:
+    driver: bridge
+
+volumes:
+  mymlruns: 
