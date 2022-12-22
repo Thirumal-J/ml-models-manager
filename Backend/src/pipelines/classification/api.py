@@ -58,6 +58,7 @@ def add_headers(response):
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
     response.headers.add('Access-Control-Expose-Headers', 'Content-Type,Content-Length,Authorization,X-Pagination')
     response.headers.add('preflightContinue', 'false')
+    response.headers.add('Access-Control-Request-Headers', '*')
     return response
 
 # Collects datasets as CSV and stores for further use

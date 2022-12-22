@@ -1,7 +1,7 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Card, Grid, Stack, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -25,7 +25,7 @@ const NewExperimentForm = ({ color = 'primary', sx, algorithms, targetAttributes
     const [showResult, setShowResult] = useState(false);
     const [targetAlgorithms, setTargetAlgorithms] = useState([]); //Initial state is null, based on experiment type selection, it will be updated
     const [selectedAlgorithm, setSelectedAlgorithm] = useState();
-    const [targetVariables, setTargetVariables] = useState(targetAttributes);
+    const [targetVariables, setTargetVariables] = useState(OptionsCreator(targetAttributes));
     const [selectedTargetVariable, setSelectedTargetVariable] = useState("");
 
     const schema = Yup.object().shape({
@@ -68,12 +68,14 @@ const NewExperimentForm = ({ color = 'primary', sx, algorithms, targetAttributes
         console.log(`train model ---> request payload -- experimentName: ${experimentName} target_variable: ${selectedTargetVariable}, algorithm_name: ${selectedAlgorithm}, selectedExperimentType: ${selectedExperimentType} `);
         const response = await api(URLPathConstants.TRAIN_MODEL_CLASSIFICATION, {
             method: 'post',
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE",
-                "Access-Control-Allow-Headers": "Content-Type,Authorization"
-
-            },
+            // headers: {
+            //     // "Access-Control-Allow-Origin": "*",
+            //     // "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE",
+            //     // "Access-Control-Allow-Headers": "Content-Type,Authorization"
+            //     "Content-Type": "application/x-www-form-urlencoded",
+            //     // 'Access-Control-Request-Headers': '*',
+            //     "Content-Length": 3495
+            // },
             body: {
                 "experiment_name": experimentName,
                 "target_variable": selectedTargetVariable,
@@ -90,9 +92,9 @@ const NewExperimentForm = ({ color = 'primary', sx, algorithms, targetAttributes
     async function uploadCSV(file) {
         let formData = new FormData();
         formData.append('file', file);
-        formData.forEach((value, key) => {
-            console.log("key %s: value %s", key, value);
-        })
+        // formData.forEach((value, key) => {
+        //     console.log("key %s: value %s", key, value);
+        // })
         const response = await api(URLPathConstants.UPLOAD_CSV_CLASSIFICATION, {
             method: "post",
             headers: { "Content-Type": "multipart/form-data" },
@@ -100,17 +102,18 @@ const NewExperimentForm = ({ color = 'primary', sx, algorithms, targetAttributes
         });
         console.log(`CSV Upload Results--> ${JSON.stringify(response)}`);
         updateTargetAttributes(response);
-        console.log(`targetAttributes updated--> ${targetAttributes}`)
         if (response) {
             setIsFileUploaded(true);
-            setTargetVariables(OptionsCreator(response["column_names"]));
+            // setTargetVariables(OptionsCreator(response["column_names"]));
         }
         // setTargetVariables(targetAttributes);
     }
+    console.log(`targetAttributes updated--> ${targetAttributes}`)
+    console.log(`targetVariables updated--> ${targetVariables}`)
 
-    // useEffect(() => {
-    //     setTargetVariables(targetAttributes);
-    //   }, [isFileUploaded]);
+    useEffect(() => {
+        setTargetVariables(OptionsCreator(targetAttributes));
+      }, [targetAttributes]);
 
     const handleFileUpload = (event) => {
         setUploadedFile(event.target.files[0]);
