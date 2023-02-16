@@ -41,6 +41,21 @@ services:
     networks:
         - mlapp-net
 
+  regression:
+    build: 
+      context: ./Backend/src
+      dockerfile: "pipelines/classification/classification.dockerfile"
+    environment:
+        - PYTHONUNBUFFERED=1
+    ports:
+        - "${PORT_REGRESSION}:${PORT_REGRESSION}"
+    volumes:
+        - mymlruns:${SHARED_VOLUME}
+    depends_on:
+        - core
+    networks:
+        - mlapp-net
+
 networks:
   mlapp-net:
     driver: bridge

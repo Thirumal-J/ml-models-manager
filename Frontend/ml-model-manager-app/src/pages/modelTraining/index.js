@@ -1,7 +1,7 @@
 // import { faker } from '@faker-js/faker';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
 
 // @mui
@@ -12,10 +12,10 @@ import Page from '../../components/Page';
 import NewExperimentForm from './newExperimentForm';
 import ExistingExperimentForm from './existingExperimentForm';
 import api from '../../services/api';
-import { URLPathConstants } from '../../utils';
-import { UPDATE_ALGORITHMS } from '../../core/actions';
+import { URLPathConstants } from '../../utils/constants';
+import { UPDATE_ALGORITHMS, UPDATE_EXPERIMENT_LIST } from '../../core/actions';
 
-function ModelTraining({algorithms,updateAlgorithms}) {
+function ModelTraining() {
   const theme = useTheme();
 
   const [newExperimentSelected, setNewExperimentSelected] = useState(false);
@@ -30,15 +30,15 @@ function ModelTraining({algorithms,updateAlgorithms}) {
     setExistingExperimentSelected(true);
     setNewExperimentSelected(false);
   };
-  
-  async function fetchAlgorithms() {
-    const response = await api(URLPathConstants.FETCH_ALGORITHMS,{method:"get"});
-    updateAlgorithms(response);
-  }
-  
-  useEffect(() => {
-    fetchAlgorithms();
-  }, []);
+
+  // async function fetchAlgorithms() {
+  //   const response = await api(URLPathConstants.FETCH_ALGORITHMS, { method: "get" });
+  //   updateAlgorithms(response);
+  // }
+
+  // useEffect(() => {
+  //   fetchAlgorithms();
+  // }, []);
 
   return (
     <Page title="Model Training">
@@ -60,7 +60,7 @@ function ModelTraining({algorithms,updateAlgorithms}) {
 
           {newExperimentSelected ?
             <Grid item xs={12} md={6} lg={8}>
-              <NewExperimentForm algorithms={algorithms}/>
+              <NewExperimentForm />
             </Grid>
             : null}
           {existingExperimentSelected ?
@@ -75,19 +75,20 @@ function ModelTraining({algorithms,updateAlgorithms}) {
 }
 
 
-const mapStateToProps = (state) => ({
-  algorithms:state.modelTrainingReducer.algorithms
-})
+// const mapStateToProps = (state) => ({
+//   algorithms: state.modelTrainingReducer.algorithms
+// })
 
-const mapDispatchToProps = (dispatch) => {
-  return {
-      updateAlgorithms: (payload) => {
-          dispatch({
-              type: UPDATE_ALGORITHMS,
-              payload
-          })
-      },
-  }
-}
+// const mapDispatchToProps = (dispatch) => {
+//   return {
+//     updateAlgorithms: (payload) => {
+//       dispatch({
+//         type: UPDATE_ALGORITHMS,
+//         payload
+//       })
+//     }
+//   }
+// }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ModelTraining);
+// export default connect(mapStateToProps, mapDispatchToProps)(ModelTraining);
+export default ModelTraining;

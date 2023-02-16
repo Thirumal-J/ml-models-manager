@@ -52,23 +52,29 @@ target_dataset_path = ""
 
 @app.after_request
 def add_headers(response):
-    response.headers.add('Content-Type', 'application/json')
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Expose-Headers', 'Content-Type,Content-Length,Authorization,X-Pagination')
-    response.headers.add('preflightContinue', 'false')
-    response.headers.add('Access-Control-Request-Headers', '*')
+    response.headers.add("Content-Type", "application/json")
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add(
+        "Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS"
+    )
+    response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
+    response.headers.add(
+        "Access-Control-Expose-Headers",
+        "Content-Type,Content-Length,Authorization,X-Pagination",
+    )
+    response.headers.add("preflightContinue", "false")
+    response.headers.add("Access-Control-Request-Headers", "*")
     return response
+
 
 # Collects datasets as CSV and stores for further use
 @app.route("/" + appConf.CLASSIFICATION + appConf.URI_CSV_UPLOAD, methods=["POST"])
 def csv_upload():
     data = []
     if request.method == "POST":
-        print(f'<--- Outside csv-upload --> request.files--> {request.files}')
+        print(f"<--- Outside csv-upload --> request.files--> {request.files}")
         if request.files:
-            print(f'<--- Inside csv-upload --> request.files--> {request.files}')
+            print(f"<--- Inside csv-upload --> request.files--> {request.files}")
             target_dataset_path = save_file(request)
             df = pd.read_csv(target_dataset_path)
             list_of_column_names = list(df.columns)
@@ -90,7 +96,7 @@ def csv_upload():
 @app.route("/" + appConf.CLASSIFICATION + appConf.URI_TRAIN_MODEL, methods=["POST"])
 def train_model():
     input = json.loads(request.data)
-
+    print(f"input--> {input}")
     # Create MLflow Experiment, create a run and log all the results
     # Create Experiment
     global target_dataset_path
@@ -137,7 +143,7 @@ def get_confusion_matrix_values(y_true, predicted_result):
 
 
 def get_model_results(
-    algorithmName, X_train_balanced, X_test, y_train_balanced, y_test
+    algorithmName, x_train_balanced, x_test, y_train_balanced, y_test
 ):
 
     classifier = ""
@@ -149,8 +155,8 @@ def get_model_results(
         classifier = GaussianNB()
     elif algorithmName == appConf.DECISION_TREE_CLASSIFICATION:
         classifier = DecisionTreeClassifier(random_state=0)
-    classifier.fit(X_train_balanced, y_train_balanced)
-
+    classifier.fit(x_train_balanced, y_train_balanced)
+    # type: ignore
     # Predict the result
     print(f"--Current directory---> {os.getcwd()}")
     # sourceDir = utils.getParentDirectory(utils.getParentDirectory())
@@ -160,7 +166,7 @@ def get_model_results(
     temp_pickle_file = sourceDir + appConf.TEMP_PICKLE_FILE_LOCATION + "/model.pkl"
     pickle.dump(classifier, open(temp_pickle_file, "wb"))
     pickled_model = pickle.load(open(temp_pickle_file, "rb"))
-    predicted_result = pickled_model.predict(X_test)
+    predicted_result = pickled_model.predict(x_test)
     print("predicted_result-->", predicted_result)
 
     r2_score_value = r2_score(y_test, predicted_result)
@@ -172,15 +178,15 @@ def get_model_results(
     )
     TN, FP, FN, TP = get_confusion_matrix_values(y_test, predicted_result)
     result = {
-        "acccuarcy": accuracy_score_value,
-        "TN": str(TN),
-        "FP": str(FP),
-        "FN": str(FN),
-        "TP": str(TP),
-        "f1_score": str(f1_score_value),
-        "precision_score": str(precision_score_value),
-        "recall_score": str(recall_score_value),
-        "r2_score": str(r2_score_value),
+        "Acccuarcy": accuracy_score_value,
+        "True Negative": str(TN),
+        "False Positive": str(FP),
+        "False Negative": str(FN),
+        "True Positive": str(TP),
+        "F1 Score": str(f1_score_value),
+        "Precision Score": str(precision_score_value),
+        "Recall Score": str(recall_score_value),
+        "R2 Score": str(r2_score_value),
     }
     return result
 
@@ -202,19 +208,19 @@ def create_mlflow_run(input, run_tags):
     print("run_id: {}; status: {}".format(run.info.run_id, run.info.status))
 
     (
-        X_train_balanced,
-        X_test,
+        x_train_balanced,
+        x_test,
         y_train_balanced,
         y_test,
     ) = preprocessing.scania_loading_and_preprocessing(
         target_dataset_path, input["target_variable"]
     )
     model_results = get_model_results(
-        input["algorithm_name"], X_train_balanced, X_test, y_train_balanced, y_test
+        input["algorithm_name"], x_train_balanced, x_test, y_train_balanced, y_test
     )
 
-    mlflow.log_param("algorithm_name", input["algorithm_name"])
-    mlflow.log_param("target_variable", input["target_variable"])
+    mlflow.log_param("Algorithm Name", input["algorithm_name"])
+    mlflow.log_param("Target Variable", input["target_variable"])
     log_metrics(model_results)
 
     # pickle_file_name = input['experiment_name'] + '_' + run.info.run_id + '.pkl'
