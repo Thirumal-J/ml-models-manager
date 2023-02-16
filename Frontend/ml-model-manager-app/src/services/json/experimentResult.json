@@ -1,13 +1,38 @@
 {
-    "experimentId": "1",
-    "experimentName":"scania trucks",
-    "runId":"dshdojdoejowjeo",
-    "runName":"scania_rf",
-    "algorithmUsed":"random forest",
-    "accuracy":"94%",
-    "RMSE":"0.203",
-    "R2":"0.203",
-    "MAE":"0.041",
-    "startTime":"6 days ago",
-    "duration":"2.3 min"
+    "data": {
+        "metrics": {
+            "FN": 18.0,
+            "FP": 617.0,
+            "TN": 14339.0,
+            "TP": 226.0,
+            "acccuarcy": 95.82,
+            "f1_score": 0.4158233670653174,
+            "precision_score": 0.2680901542111507,
+            "r2_score": -1.6449168928309916,
+            "recall_score": 0.9262295081967213
+        },
+        "params": {
+            "algorithm_name": "Random Forest Classification",
+            "target_variable": "class"
+        },
+        "tags": {
+            "mlflow.note.content": "scania experiment random forest classification",
+            "mlflow.runName": "Scania-Experiment-RF",
+            "mlflow.source.name": "/mlapp/pipelines/classification/api.py",
+            "mlflow.source.type": "LOCAL",
+            "mlflow.user": "root"
+        }
+    },
+    "info": {
+        "artifact_uri": "file:///mlapp/mlruns/0/e65d810a33604df188b3b7e36d254fa5/artifacts",
+        "end_time": 1676157609522,
+        "experiment_id": "0",
+        "lifecycle_stage": "active",
+        "run_id": "e65d810a33604df188b3b7e36d254fa5",
+        "run_name": "Scania-Experiment-RF",
+        "run_uuid": "e65d810a33604df188b3b7e36d254fa5",
+        "start_time": 1676157592025,
+        "status": "FINISHED",
+        "user_id": "root"
+    }
 }

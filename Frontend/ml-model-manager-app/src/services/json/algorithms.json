@@ -2,7 +2,7 @@
     "lassification": [
         "K-Nearest Neighbours Classification",
         "Decision Tree Classification",
-        "Naive Bayes Classification",
+        "Naive Bayes",
         "Random Forest Classification"
     ],
     "regression": [

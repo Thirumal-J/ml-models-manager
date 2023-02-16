@@ -1,23 +1,25 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Card, Grid, Stack, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 
 import { FormProvider, RHFDropdown, RHFTextField } from '../../components/hook-form';
-import { UPDATE_TARGET_ATTRIBUTES } from '../../core/actions';
+import { UPDATE_ALGORITHMS, UPDATE_TARGET_ATTRIBUTES, UPDATE_EXPERIMENT_LIST } from '../../core/actions';
 import api from '../../services/api';
-import { OptionsCreator, URLPathConstants } from '../../utils';
+import { OptionsCreator } from '../../utils';
+import { URLPathConstants } from '../../utils/constants';
 import ExperimentResult from './experimentResult';
 
-const NewExperimentForm = ({ color = 'primary', sx, algorithms, targetAttributes, updateTargetAttributes }) => {
+const NewExperimentForm = ({ color = 'primary', sx, algorithms, updateAlgorithms, targetAttributes, updateTargetAttributes, updateExperimentList }) => {
     const navigate = useNavigate();
 
+    const [existingExperimentNames, setExistingExperimentNames] = useState([]);
     const [experimentName, setExperimentName] = useState(null);
-    const [experimentTypes, setExperimentTypes] = useState(OptionsCreator(Object.keys(algorithms))); //Fetching the experiment types from the JSON and setting the initial state
+    const [experimentTypes, setExperimentTypes] = useState([]); //Fetching the experiment types from the JSON and setting the initial state
     const [selectedExperimentType, setSelectedExperimentType] = useState("");
     const [uploadedFileName, setUploadedFileName] = useState();
     const [uploadedFile, setUploadedFile] = useState();
@@ -25,11 +27,11 @@ const NewExperimentForm = ({ color = 'primary', sx, algorithms, targetAttributes
     const [showResult, setShowResult] = useState(false);
     const [targetAlgorithms, setTargetAlgorithms] = useState([]); //Initial state is null, based on experiment type selection, it will be updated
     const [selectedAlgorithm, setSelectedAlgorithm] = useState();
-    const [targetVariables, setTargetVariables] = useState(OptionsCreator(targetAttributes));
+    const [targetVariables, setTargetVariables] = useState([]);
     const [selectedTargetVariable, setSelectedTargetVariable] = useState("");
 
     const schema = Yup.object().shape({
-        preferredExpName: Yup.string().required('Experiment name should be provided'),
+        preferredExpName: Yup.string().required('Experiment name should be provided').test('nameValidation', "The name already exists!", val => existingExperimentNames.indexOf(val) === -1),
         chosenExperimentType: Yup.string().required('Experiment type should be selected'),
         chosenAlgorithm: Yup.string().required('An algorithm should be selected'),
         uploadDataset: Yup.mixed().required('File is required'),
@@ -68,14 +70,6 @@ const NewExperimentForm = ({ color = 'primary', sx, algorithms, targetAttributes
         console.log(`train model ---> request payload -- experimentName: ${experimentName} target_variable: ${selectedTargetVariable}, algorithm_name: ${selectedAlgorithm}, selectedExperimentType: ${selectedExperimentType} `);
         const response = await api(URLPathConstants.TRAIN_MODEL_CLASSIFICATION, {
             method: 'post',
-            // headers: {
-            //     // "Access-Control-Allow-Origin": "*",
-            //     // "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE",
-            //     // "Access-Control-Allow-Headers": "Content-Type,Authorization"
-            //     "Content-Type": "application/x-www-form-urlencoded",
-            //     // 'Access-Control-Request-Headers': '*',
-            //     "Content-Length": 3495
-            // },
             body: {
                 "experiment_name": experimentName,
                 "target_variable": selectedTargetVariable,
@@ -83,24 +77,16 @@ const NewExperimentForm = ({ color = 'primary', sx, algorithms, targetAttributes
                 "experimentType": selectedExperimentType
             },
         });
-
-        console.log(`response--> ${response}`);
-
     }
-    console.log(experimentTypes);
 
     async function uploadCSV(file) {
         let formData = new FormData();
         formData.append('file', file);
-        // formData.forEach((value, key) => {
-        //     console.log("key %s: value %s", key, value);
-        // })
         const response = await api(URLPathConstants.UPLOAD_CSV_CLASSIFICATION, {
             method: "post",
             headers: { "Content-Type": "multipart/form-data" },
             data: formData
         });
-        console.log(`CSV Upload Results--> ${JSON.stringify(response)}`);
         updateTargetAttributes(response);
         if (response) {
             setIsFileUploaded(true);
@@ -108,12 +94,30 @@ const NewExperimentForm = ({ color = 'primary', sx, algorithms, targetAttributes
         }
         // setTargetVariables(targetAttributes);
     }
-    console.log(`targetAttributes updated--> ${targetAttributes}`)
-    console.log(`targetVariables updated--> ${targetVariables}`)
+
+    async function fetchExperimentList() {
+        const response = await api(URLPathConstants.FETCH_EXPERIMENT_LIST, { method: "get" });
+        updateExperimentList(response);
+        setExistingExperimentNames(response.map(res => res._name))
+    }
+
+    async function fetchAlgorithms() {
+        const response = await api(URLPathConstants.FETCH_ALGORITHMS, { method: "get" });
+        updateAlgorithms(response);
+    }
 
     useEffect(() => {
         setTargetVariables(OptionsCreator(targetAttributes));
-      }, [targetAttributes]);
+    }, [targetAttributes]);
+
+    useEffect(() => {
+        setExperimentTypes(OptionsCreator(Object.keys(algorithms)));
+    }, [algorithms]);
+
+    useEffect(() => {
+        fetchExperimentList();
+        fetchAlgorithms();
+    }, [])
 
     const handleFileUpload = (event) => {
         setUploadedFile(event.target.files[0]);
@@ -122,25 +126,19 @@ const NewExperimentForm = ({ color = 'primary', sx, algorithms, targetAttributes
     };
 
     const handleExpTypeSelection = (event) => {
-        console.log("Inisde -- handleExpTypeSelection--")
         setSelectedExperimentType(event.target.innerText);
         setTargetAlgorithms(OptionsCreator(algorithms[event.target.innerText]));
     };
 
     const handleExpNameSelection = (event) => {
-        console.log("Inisde -- handleExpNameSelection--");
-        console.log(`event--> ${JSON.stringify(event)} ---
-        event.target.innerText --> ${event.target.innerText}`);
         setExperimentName(event.target.innerText);
     };
 
     const handleAlgorithmSelection = (event) => {
-        console.log("Inisde -- handleAlgorithmSelection--");
         setSelectedAlgorithm(event.target.innerText);
     };
 
     const handleTargetVariableSelection = (event) => {
-        console.log("Inisde -- handleTargetVariableSelection--");
         setSelectedTargetVariable(event.target.innerText);
     };
 
@@ -198,17 +196,31 @@ NewExperimentForm.propTypes = {
 
 
 const mapStateToProps = (state) => ({
-    targetAttributes: state.modelTrainingReducer.targetAttributes
+    algorithms: state.modelTrainingReducer.algorithms,
+    targetAttributes: state.modelTrainingReducer.targetAttributes,
 })
 
 const mapDispatchToProps = (dispatch) => {
     return {
+        updateExperimentList: (payload) => {
+            dispatch({
+                type: UPDATE_EXPERIMENT_LIST,
+                payload
+            })
+        },
+        updateAlgorithms: (payload) => {
+            dispatch({
+                type: UPDATE_ALGORITHMS,
+                payload
+            })
+        },
         updateTargetAttributes: (payload) => {
             dispatch({
                 type: UPDATE_TARGET_ATTRIBUTES,
                 payload
             })
         },
+
     }
 }
 
