@@ -72,22 +72,28 @@ def add_headers(response):
 def csv_upload():
     data = []
     if request.method == "POST":
-        print(f"<--- Outside csv-upload --> request.files--> {request.files}")
-        if request.files:
-            print(f"<--- Inside csv-upload --> request.files--> {request.files}")
-            target_dataset_path = save_file(request)
-            df = pd.read_csv(target_dataset_path)
-            list_of_column_names = list(df.columns)
-            list_of_column_names.pop(0)  # Eliminating unnecessary 1st column
-            # displaying the list of column names
-            output_data = {
-                "msg": "File upload Success",
-                "status": "200",
-                "column_names": list_of_column_names,
-            }
-            return output_data
-        else:
-            return jsonify("{msg:'No file found'}")
+        try:
+            print(f"<--- Outside csv-upload --> request.files--> {request.files}")
+            if request.files:
+                print(f"<--- Inside csv-upload --> request.files--> {request.files}")
+                target_dataset_path = save_file(request)
+                print(
+                    f"<--- Saved file successfully --- target--dataset-path--> {target_dataset_path}"
+                )
+                df = pd.read_csv(target_dataset_path)
+                list_of_column_names = list(df.columns)
+                list_of_column_names.pop(0)  # Eliminating unnecessary 1st column
+                # displaying the list of column names
+                output_data = {
+                    "msg": "File upload Success",
+                    "status": "200",
+                    "column_names": list_of_column_names,
+                }
+                return output_data
+            else:
+                return jsonify("{msg:'No file found'}")
+        except:
+            return jsonify("{msg:'file upload error, try again'}")
     else:
         return jsonify("{msg:'Invalid HTTP request, Kindly send POST request'}")
 
