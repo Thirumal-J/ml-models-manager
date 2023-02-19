@@ -74,7 +74,7 @@ const NewExperimentForm = ({ color = 'primary', sx, algorithms, updateAlgorithms
                 "experiment_name": experimentName,
                 "target_variable": selectedTargetVariable,
                 "algorithm_name": selectedAlgorithm,
-                "experimentType": selectedExperimentType
+                "experiment_type": selectedExperimentType
             },
         });
     }
@@ -191,9 +191,6 @@ NewExperimentForm.propTypes = {
     color: PropTypes.string,
     sx: PropTypes.object,
 };
-
-// export default NewExperimentForm;
-
 
 const mapStateToProps = (state) => ({
     algorithms: state.modelTrainingReducer.algorithms,

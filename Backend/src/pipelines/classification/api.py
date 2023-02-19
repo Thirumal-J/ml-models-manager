@@ -100,7 +100,11 @@ def train_model():
     # Create MLflow Experiment, create a run and log all the results
     # Create Experiment
     global target_dataset_path
-    tags = {"dataset_path": target_dataset_path}
+    tags = {
+        "dataset_path": target_dataset_path,
+        "experiment_type": input["experiment_type"],
+        "target_variable": input["target_variable"],
+    }
     mlflow.end_run()
     experiment_id = mlflow.create_experiment(input["experiment_name"], tags=tags)
     input["version"] = "0"
@@ -117,6 +121,8 @@ def train_model():
 def re_train_model():
     input = json.loads(request.data)
     global target_dataset_path
+    target_dataset_path = input["dataset_path"]
+    print(f"retrain model--> target_dataset_path--> {target_dataset_path}")
     mlflow.end_run()
     latest_run = mlflow.search_runs(experiment_ids=[input["experiment_id"]])
     run_tags = []
@@ -206,7 +212,6 @@ def create_mlflow_run(input, run_tags):
 
     run = mlflow.active_run()
     print("run_id: {}; status: {}".format(run.info.run_id, run.info.status))
-
     (
         x_train_balanced,
         x_test,
