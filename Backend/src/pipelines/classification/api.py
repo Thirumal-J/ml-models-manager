@@ -45,6 +45,8 @@ from sklearn.tree import DecisionTreeClassifier
 from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
+app_ctx = app.app_context()
+app_ctx.push()
 
 app.config["FILE_UPLOADS"] = sourceDir + appConf.DATASET_FOLDER_LOCATION
 target_dataset_path = ""
@@ -72,62 +74,27 @@ def add_headers(response):
 def csv_upload():
     data = []
     if request.method == "POST":
-        print(f"<--- Outside csv-upload --> request.files--> {request.files}")
-        if request.files:
-            print(f"<--- Inside csv-upload --> request.files--> {request.files}")
-            target_dataset_path = save_file(request)
-            df = pd.read_csv(target_dataset_path)
-            list_of_column_names = list(df.columns)
-            list_of_column_names.pop(0)  # Eliminating unnecessary 1st column
-            # displaying the list of column names
-            output_data = {
-                "msg": "File upload Success",
-                "status": "200",
-                "column_names": list_of_column_names,
-            }
-            return output_data
-        else:
-            return jsonify("{msg:'No file found'}")
+        try:
+            if request.files:
+                print(f"<--- Inside csv-upload --> request.files--> {request.files}")
+                target_dataset_path = save_file(request)
+                df = pd.read_csv(target_dataset_path)
+                list_of_column_names = list(df.columns)
+                list_of_column_names.pop(0)  # Eliminating unnecessary 1st column
+                # displaying the list of column names
+                output_data = {
+                    "msg": "File upload Success",
+                    "status": "200",
+                    "column_names": list_of_column_names,
+                }
+                return output_data
+            else:
+                return jsonify("{msg:'No file found'}")
+        except Exception as e:
+            print(f"Error occurred--> {e}")
+            return jsonify("{msg:'File upload error, try again'}")
     else:
         return jsonify("{msg:'Invalid HTTP request, Kindly send POST request'}")
-
-
-# Trains the model, creates a new mlflow experiment, creates new run within that experiment
-@app.route("/" + appConf.CLASSIFICATION + appConf.URI_TRAIN_MODEL, methods=["POST"])
-def train_model():
-    input = json.loads(request.data)
-    print(f"input--> {input}")
-    # Create MLflow Experiment, create a run and log all the results
-    # Create Experiment
-    global target_dataset_path
-    tags = {
-        "dataset_path": target_dataset_path,
-        "experiment_type": input["experiment_type"],
-        "target_variable": input["target_variable"],
-    }
-    mlflow.end_run()
-    experiment_id = mlflow.create_experiment(input["experiment_name"], tags=tags)
-    input["version"] = "0"
-    input["experiment_id"] = experiment_id
-    # input["target_dataset_path"] = target_dataset_path
-    user_id = os.environ.get("USER", os.environ.get("USERNAME"))
-    run_tags = []
-
-    return create_mlflow_run(input, run_tags)
-
-
-# Retrains the model, updates existing mlflow experiment, creates a new run within that experiment
-@app.route("/" + appConf.CLASSIFICATION + appConf.URI_RETRAIN_MODEL, methods=["POST"])
-def re_train_model():
-    input = json.loads(request.data)
-    global target_dataset_path
-    target_dataset_path = input["dataset_path"]
-    print(f"retrain model--> target_dataset_path--> {target_dataset_path}")
-    mlflow.end_run()
-    latest_run = mlflow.search_runs(experiment_ids=[input["experiment_id"]])
-    run_tags = []
-
-    return create_mlflow_run(input, run_tags)
 
 
 # function to save the uploaded dataset file
@@ -143,9 +110,84 @@ def save_file(request):
     return target_dataset_path
 
 
-def get_confusion_matrix_values(y_true, predicted_result):
-    cm = confusion_matrix(y_true, predicted_result)
-    return (cm[0][0], cm[0][1], cm[1][0], cm[1][1])
+# Trains the model, creates a new mlflow experiment, creates new run within that experiment
+@app.route("/" + appConf.CLASSIFICATION + appConf.URI_TRAIN_MODEL, methods=["POST"])
+def train_model():
+    try:
+        input = json.loads(request.data)
+        print(f"input--> {input}")
+        # Create MLflow Experiment, create a run and log all the results
+        # Create Experiment
+        global target_dataset_path
+        tags = {
+            "dataset_path": target_dataset_path,
+            "experiment_type": input["experiment_type"],
+            "target_variable": input["target_variable"],
+        }
+        mlflow.end_run()
+        experiment_id = mlflow.create_experiment(input["experiment_name"], tags=tags)
+        input["version"] = "0"
+        input["experiment_id"] = experiment_id
+        # input["target_dataset_path"] = target_dataset_path
+        user_id = os.environ.get("USER", os.environ.get("USERNAME"))
+        run_tags = []
+
+        return create_mlflow_run(input, run_tags)
+    except Exception as e:
+        print(f"Error occurred--> {e}")
+        return jsonify("{msg:'model training error, try again'}")
+
+
+# Retrains the model, updates existing mlflow experiment, creates a new run within that experiment
+@app.route("/" + appConf.CLASSIFICATION + appConf.URI_RETRAIN_MODEL, methods=["POST"])
+def re_train_model():
+    try:
+        input = json.loads(request.data)
+        global target_dataset_path
+        target_dataset_path = input["dataset_path"]
+        print(f"retrain model--> target_dataset_path--> {target_dataset_path}")
+        mlflow.end_run()
+        latest_run = mlflow.search_runs(experiment_ids=[input["experiment_id"]])
+        print(f"latest_run--> {latest_run}")
+        run_tags = []
+
+        return create_mlflow_run(input, run_tags)
+    except Exception as e:
+        print(f"Error occurred--> {e}")
+        return jsonify("{msg:'model re-training error, try again'}")
+
+
+def create_mlflow_run(input, run_tags):
+    mlflow.start_run(
+        experiment_id=input["experiment_id"],
+        run_name=input["version_name"],
+        description=input["description"],
+        tags=run_tags,
+    )
+
+    run = mlflow.active_run()
+    print("run_id: {}; status: {}".format(run.info.run_id, run.info.status))
+    (
+        x_train_balanced,
+        x_test,
+        y_train_balanced,
+        y_test,
+    ) = preprocessing.scania_loading_and_preprocessing(
+        target_dataset_path, input["target_variable"]
+    )
+    model_results = get_model_results(
+        input["algorithm_name"], x_train_balanced, x_test, y_train_balanced, y_test
+    )
+
+    mlflow.log_param("Algorithm Name", input["algorithm_name"])
+    mlflow.log_param("Target Variable", input["target_variable"])
+    log_metrics(model_results)
+
+    # pickle_file_name = input['experiment_name'] + '_' + run.info.run_id + '.pkl'
+    mlflow.log_artifact(sourceDir + appConf.TEMP_PICKLE_FILE_LOCATION + "/model.pkl")
+    mlflow.end_run()
+    run = mlflow.get_run(run.info.run_id)
+    return run.to_dictionary()
 
 
 def get_model_results(
@@ -197,42 +239,14 @@ def get_model_results(
     return result
 
 
+def get_confusion_matrix_values(y_true, predicted_result):
+    cm = confusion_matrix(y_true, predicted_result)
+    return (cm[0][0], cm[0][1], cm[1][0], cm[1][1])
+
+
 def log_metrics(list_to_update):
     for k, v in list_to_update.items():
         mlflow.log_metric(k, v)
-
-
-def create_mlflow_run(input, run_tags):
-    mlflow.start_run(
-        experiment_id=input["experiment_id"],
-        run_name=input["version_name"],
-        description=input["description"],
-        tags=run_tags,
-    )
-
-    run = mlflow.active_run()
-    print("run_id: {}; status: {}".format(run.info.run_id, run.info.status))
-    (
-        x_train_balanced,
-        x_test,
-        y_train_balanced,
-        y_test,
-    ) = preprocessing.scania_loading_and_preprocessing(
-        target_dataset_path, input["target_variable"]
-    )
-    model_results = get_model_results(
-        input["algorithm_name"], x_train_balanced, x_test, y_train_balanced, y_test
-    )
-
-    mlflow.log_param("Algorithm Name", input["algorithm_name"])
-    mlflow.log_param("Target Variable", input["target_variable"])
-    log_metrics(model_results)
-
-    # pickle_file_name = input['experiment_name'] + '_' + run.info.run_id + '.pkl'
-    mlflow.log_artifact(sourceDir + appConf.TEMP_PICKLE_FILE_LOCATION + "/model.pkl")
-    mlflow.end_run()
-    run = mlflow.get_run(run.info.run_id)
-    return run.to_dictionary()
 
 
 def setMLflowTrackingURI():

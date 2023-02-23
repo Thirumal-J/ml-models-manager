@@ -1,64 +1,58 @@
-version: "3"
+version: "3.9"
 
 services:
-  
-  # api-gateway:
-  #   image: nginx:1.17.10
-  #   container_name: reverse_proxy
-  #   depends_on:
-  #     - core
-  #     - classification
-  #   volumes:
-  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-  #   ports:
-  #     - 80:80
 
   core:
-    build: 
+    # image: python:3.9-alpine
+    build:
       context: ./Backend/src
       dockerfile: "core/core.dockerfile"
     environment:
-        - PYTHONUNBUFFERED=1
+      - PYTHONUNBUFFERED=1
     ports:
-        - "${PORT_MLFLOW}:${PORT_MLFLOW}"
+      - "${PORT_MLFLOW}:${PORT_MLFLOW}"
     volumes:
-        - mymlruns:${SHARED_VOLUME}
+      - mymlruns:${SHARED_VOLUME}
     networks:
-        - mlapp-net
+      - mlapp-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail http://localhost:${PORT_MLFLOW} || exit 1"
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   classification:
-    build: 
+    # image: python:3.9-alpine
+    build:
       context: ./Backend/src
       dockerfile: "pipelines/classification/classification.dockerfile"
     environment:
-        - PYTHONUNBUFFERED=1
+      - PYTHONUNBUFFERED=1
     ports:
-        - "${PORT_CLASSIFICATION}:${PORT_CLASSIFICATION}"
+      - "${PORT_CLASSIFICATION}:${PORT_CLASSIFICATION}"
     volumes:
-        - mymlruns:${SHARED_VOLUME}
+      - mymlruns:${SHARED_VOLUME}
     depends_on:
-        - core
+      - core
     networks:
-        - mlapp-net
-
-  regression:
-    build: 
-      context: ./Backend/src
-      dockerfile: "pipelines/classification/classification.dockerfile"
-    environment:
-        - PYTHONUNBUFFERED=1
-    ports:
-        - "${PORT_REGRESSION}:${PORT_REGRESSION}"
-    volumes:
-        - mymlruns:${SHARED_VOLUME}
-    depends_on:
-        - core
-    networks:
-        - mlapp-net
+      - mlapp-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail http://localhost:${PORT_CLASSIFICATION} || exit 1"
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   mlapp-net:
     driver: bridge
 
 volumes:
-  mymlruns: 
+  mymlruns:

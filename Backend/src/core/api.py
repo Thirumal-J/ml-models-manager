@@ -9,15 +9,20 @@ print(f"\n<--- Current Directory ---> {os.getcwd()}")
 
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))
 
+# currentdir = os.path.dirname(os.path.realpath(__file__))
+# parentdir = os.path.dirname(currentdir)
+# sys.path.append(parentdir)
 import shutil
 
 import config as appConf
 import mlflow
 import utils
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, current_app
 from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
+app_ctx = app.app_context()
+app_ctx.push()
 CORS(app, support_credentials=True)
 app.config["FILE_UPLOADS"] = appConf.DATASET_FOLDER_LOCATION
 target_dataset_path = ""
@@ -25,12 +30,17 @@ target_dataset_path = ""
 
 @app.after_request
 def add_headers(response):
-    response.headers.add('Content-Type', 'application/json')
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Expose-Headers', 'Content-Type,Content-Length,Authorization,X-Pagination')
-    response.headers.add('preflightContinue', 'false')
+    response.headers.add("Content-Type", "application/json")
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add(
+        "Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS"
+    )
+    response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
+    response.headers.add(
+        "Access-Control-Expose-Headers",
+        "Content-Type,Content-Length,Authorization,X-Pagination",
+    )
+    response.headers.add("preflightContinue", "false")
     return response
 
 
@@ -47,12 +57,14 @@ def get_algorithms():
 def get_experiment_list():
     try:
         # Retrieve existing MLflow Experiment List
-        all_experiments = [experiment.__dict__
-                           for experiment in mlflow.search_experiments(order_by=["name"])
-                           ]
+        all_experiments = [
+            experiment.__dict__
+            for experiment in mlflow.search_experiments(order_by=["name"])
+        ]
         return jsonify(all_experiments)
-    except:
-        return jsonify({"status": "FAILED", "msg": "unable to fetch all experiments, please try again"})
+    except Exception as e:
+        print(f"Error occurred--> {e}")
+        return jsonify({"msg": "unable to fetch all experiments, please try again"})
 
 
 # Fetches the experiment details using the id provided by the user
@@ -63,32 +75,47 @@ def get_experiment_by_id():
         experiment_id = request.args.get("experiment_id")
         experiment = mlflow.get_experiment(experiment_id)
         return experiment.__dict__
-    except:
-        return jsonify({"status": "FAILED", "msg": "no such experiment exists"})
+    except Exception as e:
+        print(f"Error occurred--> {e}")
+        return jsonify({"msg": "no such experiment exists"})
 
 
 # Delete an experiment
 @app.route(appConf.URI_MLFLOW + appConf.URI_DELETE_EXPERIMENT, methods=["POST"])
 def delete_experiment():
-
     input = json.loads(request.data)
-    mlruns_abs_path = utils.getMLRunsAbsPath()
-    delete_experiment_directory = mlruns_abs_path + "/" + input["experiment_id"]
-    trash_experiment_directory = mlruns_abs_path + "/.trash"
-    print(f"<--- delete_experiment_directory --> {delete_experiment_directory}")
-    if os.path.exists(trash_experiment_directory):
-        run = mlflow.active_run()
-        mlflow.end_run()
-        shutil.rmtree(trash_experiment_directory)
-    if os.path.exists(delete_experiment_directory):
-        run = mlflow.active_run()
-        mlflow.end_run()
-        shutil.rmtree(delete_experiment_directory)
-        return jsonify({"status": "SUCCESS", "msg": "experiment deleted"})
-    else:
-        return jsonify(
-            {"status": "FAILED", "msg": "no such folder exists, experiment not found"}
-        )
+    return remove_experiment(input)
+
+
+def remove_experiment(input):
+    try:
+        # if input is None:
+        #     input["experiment_id"] = "0"
+        # else:
+        #     pass
+        mlruns_abs_path = utils.getMLRunsAbsPath()
+        delete_experiment_directory = mlruns_abs_path + "/" + input["experiment_id"]
+        trash_experiment_directory = mlruns_abs_path + "/.trash"
+        print(f"<--- delete_experiment_directory --> {delete_experiment_directory}")
+        if os.path.exists(trash_experiment_directory):
+            run = mlflow.active_run()
+            mlflow.end_run()
+            shutil.rmtree(trash_experiment_directory)
+        if os.path.exists(delete_experiment_directory):
+            run = mlflow.active_run()
+            mlflow.end_run()
+            shutil.rmtree(delete_experiment_directory)
+            return jsonify({"status": "SUCCESS", "msg": "experiment deleted"})
+        else:
+            return jsonify(
+                {
+                    "status": "FAILED",
+                    "msg": "no such folder exists, experiment not found",
+                }
+            )
+    except Exception as e:
+        print(f"Error occurred--> {e}")
+        return jsonify({"msg": "no such experiment exists"})
 
 
 # All runs in an experiment
@@ -98,8 +125,11 @@ def search_mlflow_runs():
         experiment_id = request.args.get("experiment-id")
         runs = mlflow.search_runs([experiment_id])
         return runs.to_dict()
-    except:
-        return jsonify({"status": "FAILED", "msg": "unable to fetch all runs of the experiment"})
+    except Exception as e:
+        print(f"Error occurred--> {e}")
+        return jsonify(
+            {"status": "FAILED", "msg": "unable to fetch all runs of the experiment"}
+        )
 
 
 # Register Model
@@ -140,7 +170,8 @@ def register_model():
 
         else:
             return jsonify("msg:no such experiment run exists")
-    except:
+    except Exception as e:
+        print(f"Error occurred--> {e}")
         return jsonify({"status": "FAILED", "msg": "Sorry, unable to register model"})
 
 
@@ -152,7 +183,8 @@ def get_run_by_id():
         run_id = request.args.get("run_id")
         run = mlflow.get_run(run_id)
         return run.to_dictionary()
-    except:
+    except Exception as e:
+        print(f"Error occurred--> {e}")
         return jsonify({"msg": "no such experiment run exists"})
 
 
@@ -179,14 +211,19 @@ def get_deployed_models():
             }
             deployed_models.append(model)
         return jsonify(deployed_models)
-    except:
+    except Exception as e:
+        print(f"Error occurred--> {e}")
         return jsonify({"msg": "Sorry, unable to retrieve all deployed models"})
+
 
 def setMLflowTrackingURI():
 
     mlruns_abs_path = utils.getMLRunsAbsPath()
     tracking_uri = f"file://{mlruns_abs_path}"
     mlflow.set_tracking_uri(tracking_uri)
+    input = {}
+    input["experiment_id"] = "0"  # to remove default experiment to avoid confusion
+    remove_experiment(input)
     print(f"\n<---MLFLOW Tracking URI ---> {mlflow.get_tracking_uri()}")
 
 
