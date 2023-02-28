@@ -1,19 +1,15 @@
-// import { faker } from '@faker-js/faker';
-import React from 'react';
-
 // @mui
 import { useTheme } from '@mui/material/styles';
 import { Grid, Container, Typography, Box } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { connect } from 'react-redux';
+
 // components
 import Page from '../../components/Page';
 import SelectExperiment from './selectExperiment';
-import ViewExperimentDetails from './viewExperimentDetails';
-// import Iconify from '../components/Iconify';
-// sections
-// ----------------------------------------------------------------------
 
 
-export default function ExperimentList() {
+const ExperimentList = () => {
   const theme = useTheme();
 
   return (
@@ -23,11 +19,13 @@ export default function ExperimentList() {
           Experiments List
         </Typography>
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6} lg={8}>
+          <Grid item xs={12} md={6} lg={12}>
             <SelectExperiment />
           </Grid>
         </Grid>
       </Container>
     </Page>
-  );
-}
+  )
+};
+
+export default ExperimentList;

@@ -1,0 +1,15 @@
+artifact_uri: file:///home/thiruaash/ws/ml-models-manager/Backend/src/mlruns/882016029736249009/f938c976e74f45b7b68ccf1267738b5a/artifacts
+end_time: 1677545001462
+entry_point_name: ''
+experiment_id: '882016029736249009'
+lifecycle_stage: active
+run_id: f938c976e74f45b7b68ccf1267738b5a
+run_name: Scania-Experiment-7_NBC
+run_uuid: f938c976e74f45b7b68ccf1267738b5a
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1677544719586
+status: 3
+tags: []
+user_id: thiruaash

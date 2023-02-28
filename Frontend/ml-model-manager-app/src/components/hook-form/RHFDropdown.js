@@ -12,7 +12,7 @@ RHFDropdown.propTypes = {
 
 export default function RHFDropdown({ name, options, ...other }) {
   const { control } = useFormContext();
-  
+
   return (
     <Controller
       name={name}
@@ -21,10 +21,14 @@ export default function RHFDropdown({ name, options, ...other }) {
         <TextField
           {...field}
           select size="small"
+          name={name}
+          // label={label}
+          // onChange={onChange}
           helperText={error?.message}
           value={field.value}
           error={!!error}
-          {...other}>
+          {...other}
+        >
           {options.map((option) => (
             <MenuItem key={option.value} value={option.value}>
               {option.label}

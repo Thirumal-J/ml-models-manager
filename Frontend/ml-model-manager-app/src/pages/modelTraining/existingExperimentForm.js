@@ -1,77 +1,81 @@
 import React, { useEffect } from 'react';
 import * as Yup from 'yup';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTheme } from '@mui/material/styles';
 import { useForm } from 'react-hook-form';
 import { connect } from 'react-redux';
-import { Typography, Box, Button, Stack, Grid, Card } from '@mui/material';
+import { Button, Stack, Grid, Card, Typography } from '@mui/material';
 import { yupResolver } from '@hookform/resolvers/yup';
 
 import { FormProvider, RHFDropdown, RHFTextField } from '../../components/hook-form';
-import { ExperimentNames, OptionsCreator } from '../../utils';
+import { OptionsCreator } from '../../utils';
 import ExperimentResult from './experimentResult';
 import { UPDATE_ALGORITHMS, UPDATE_EXPERIMENT_LIST } from '../../core/actions';
 import api from '../../services/api';
 import { URLPathConstants } from '../../utils/constants';
-import AllExperimentsJSON from '../../services/json/allExperiments.json';
-import AlgorithmsJSON from '../../services/json/algorithms.json';
 
 const ExistingExperimentForm = ({ color = 'primary', sx, algorithms, updateAlgorithms, experimentList, updateExperimentList }) => {
-    const navigate = useNavigate();
 
     const [showResult, setShowResult] = useState(false);
-    // const [retrainModel, setRetrainModel] = useState({});
-    const [experimentType, setExperimentType] = useState("");
-    const [experimentName, setExperimentName] = useState("");
-    // const [existingExperiments, setExistingExperiments] = useState(ExperimentNames(AllExperimentsJSON));
     const [existingExperiments, setExistingExperiments] = useState([]);
-    const [targetAlgorithms, setTargetAlgorithms] = useState([]); //Initial state is null, based on experiment type selection, it will be updated
-    const [selectedAlgorithm, setSelectedAlgorithm] = useState("");
-    const [datasetPath, setDatasetPath] = useState("");
-    const [experimentId, setExperimentId] = useState("");
-    const [experimentTargetVariable, setExperimentTargetVariable] = useState("");
-
-    console.log(existingExperiments);
+    const [targetAlgorithms, setTargetAlgorithms] = useState([]);
+    const [experimentResult, setExperimentResult] = useState({});
+    const [submitError, setSubmitError] = useState(null);
 
     const schema = Yup.object().shape({
         experimentName: Yup.string().required('you must choose an experiment name'),
-        chosenAlgorithm: Yup.string().required('you must choose an algorithm'),
+        algorithmName: Yup.string().required('you must choose an algorithm'),
     });
 
-    const defaultValues = {
-        experimentName: '',
-        chosenAlgorithm: '',
-        experimentType: '',
-    };
+    const [expData, setExpData] = useState(
+        {
+            experimentId: "",
+            experimentName: "",
+            experimentType: "",
+            algorithmName: "",
+            targetVariable: "",
+            datasetPath: ""
+        }
+    );
 
     const methods = useForm({
         resolver: yupResolver(schema),
         mode: "onChange",
-        defaultValues,
+        defaultValues: expData
     });
 
-    const {
-        handleSubmit,
-        formState: { errors },
-    } = methods;
-
     const onSubmit = async () => {
-        setShowResult(true);
+        try {
+            const responseData = await retrainModel();
+            if (responseData === "error" || responseData.status === "error") {
+                setSubmitError("Error occurred during model retraining, check the input data");
+            }
+            else {
+                setSubmitError(null);
+                setShowResult(true);
+                setExperimentResult(responseData);
+            }
+        } catch (error) {
+            console.log(`error--${JSON.stringify(error)}`);
+            setSubmitError("Error occurred during model retraining, check the input data");
+        }
     };
 
+    console.log(`showResult--${showResult}`);
     async function retrainModel() {
-        const response = await api(URLPathConstants.TRAIN_MODEL_CLASSIFICATION, {
+        const response = await api(URLPathConstants.RETRAIN_MODEL_CLASSIFICATION, {
             method: 'post',
-            body: {
-                "experiment_id": experimentId,
-                "target_variable": experimentTargetVariable,
-                "algorithm_name": selectedAlgorithm,
-                "experiment_type": experimentType,
-                "dataset_path": datasetPath,
+            data: {
+                "algorithm_name": expData.algorithmName,
+                "target_variable": expData.targetVariable,
+                "experiment_name": expData.experimentName,
+                "experiment_id": expData.experimentId,
+                "experiment_type": expData.experimentType,
+                "dataset_path": expData.datasetPath
             },
         });
+        return response; // return the response data
     }
+
 
     async function fetchExperimentList() {
         const response = await api(URLPathConstants.FETCH_EXPERIMENT_LIST, { method: "get" });
@@ -94,42 +98,50 @@ const ExistingExperimentForm = ({ color = 'primary', sx, algorithms, updateAlgor
     }, []);
 
     useEffect(() => {
-        if (experimentType)
-            setTargetAlgorithms(OptionsCreator(algorithms[experimentType]));
-    }, [experimentType]);
+        if (expData.experimentType) {
+            setTargetAlgorithms(OptionsCreator(algorithms[expData.experimentType]));
+        }
+    }, [expData.experimentType]);
 
-    const handleExpSelection = (event) => {
-        console.log(`event---> ${event.target.dataset}`);
-        const indexOfExperiment = experimentList.map(experiment => experiment._name).indexOf(event.target.dataset.value);
-        setExperimentType(experimentList[indexOfExperiment]._tags.experiment_type);
-        setDatasetPath(experimentList[indexOfExperiment]._tags.dataset_path);
-        setExperimentId(experimentList[indexOfExperiment]._experiment_id);
-        setExperimentTargetVariable(experimentList[indexOfExperiment]._tags.target_variable);
-    };
-
-    const handleAlgorithmSelection = (event) => {
-        setSelectedAlgorithm(event.target.innerText);
+    console.log(`Expdata --${JSON.stringify(expData)}`);
+    const handleInput = (event) => {
+        const { name, value } = event.target
+        setExpData(prevState => ({
+            ...prevState,
+            [name]: value
+        }));
+        if (name === "experimentName") {
+            const indexOfExperiment = experimentList.map((experiment) => { return experiment._name }).indexOf(value);
+            setExpData(prevState => ({
+                ...prevState,
+                experimentType: experimentList[indexOfExperiment]._tags.experiment_type,
+                datasetPath: experimentList[indexOfExperiment]._tags.dataset_path,
+                experimentId: experimentList[indexOfExperiment]._experiment_id,
+                targetVariable: experimentList[indexOfExperiment]._tags.target_variable,
+            }));
+        }
     };
 
     return (
         <Card
             sx={{
+                // bgcolor: "lightgray",
                 py: 5,
                 boxShadow: 0,
                 paddingLeft: 3,
-                color: (theme) => theme.palette[color].darker,
+                color: (theme) => theme.palette.grey,
                 ...sx,
             }}
         >
             {!showResult ?
                 <Grid container spacing={3}>
                     <Grid item xs={12} md={6} lg={8}>
-                        <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
+                        <FormProvider methods={methods} onSubmit={methods.handleSubmit(onSubmit)}>
                             <Stack direction="column" spacing={3}>
-                                <RHFDropdown name="experimentName" label="Experiment Name" options={existingExperiments} onChange={handleExpSelection} />
-                                <RHFDropdown name="chosenAlgorithm" label="Select the algorithm" options={targetAlgorithms || []} onChange={handleAlgorithmSelection} />
-                                <RHFTextField name='experimentType' label="Chosen Experiment Type" disabled value={experimentType} />
-                                <Button variant="contained" size="large" color="primary" onClick={handleSubmit(onSubmit)}>
+                                <RHFDropdown name="experimentName" label="Experiment name" options={existingExperiments || []} onBlur={handleInput} />
+                                <RHFTextField name="experimentType" label="Experiment type" disabled value={expData.experimentType} />
+                                <RHFDropdown name="algorithmName" label="Select the algorithm" options={targetAlgorithms || []} onBlur={handleInput} />
+                                <Button variant="contained" color="primary" type="submit">
                                     Re-Train Model
                                 </Button>
                             </Stack>
@@ -137,10 +149,20 @@ const ExistingExperimentForm = ({ color = 'primary', sx, algorithms, updateAlgor
                     </Grid>
                 </Grid>
                 : null}
+            {submitError && (
+                <Grid container spacing={5}>
+                    <Grid item xs={12} md={6} lg={8}>
+                        <Typography color="error" variant="h5">
+                            {submitError}
+                        </Typography>
+                    </Grid>
+                </Grid>
+            )
+            }
             {showResult ?
                 <Grid container spacing={3}>
                     <Grid item xs={12} md={6} lg={8}>
-                        <ExperimentResult />
+                        <ExperimentResult experimentResult={experimentResult} />
                     </Grid>
                 </Grid>
                 : null}
@@ -150,8 +172,8 @@ const ExistingExperimentForm = ({ color = 'primary', sx, algorithms, updateAlgor
 
 
 const mapStateToProps = (state) => ({
-    algorithms: state.modelTrainingReducer.algorithms,
-    experimentList: state.modelTrainingReducer.experimentList,
+    algorithms: state.appReducer.algorithms,
+    experimentList: state.appReducer.experimentList,
 })
 
 const mapDispatchToProps = (dispatch) => {

@@ -29,7 +29,7 @@ export default function DeployedModels() {
     <Page title="Deployed Models">
       <Container maxWidth="xl">
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6} lg={8}>
+          <Grid item xs={12} md={6} lg={12}>
             <ViewDeployedModels />
           </Grid>
         </Grid>

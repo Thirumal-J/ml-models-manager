@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { connect } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 
 import { FormProvider, RHFDropdown, RHFTextField } from '../../components/hook-form';
@@ -15,84 +14,86 @@ import { URLPathConstants } from '../../utils/constants';
 import ExperimentResult from './experimentResult';
 
 const NewExperimentForm = ({ color = 'primary', sx, algorithms, updateAlgorithms, targetAttributes, updateTargetAttributes, updateExperimentList }) => {
-    const navigate = useNavigate();
-
     const [existingExperimentNames, setExistingExperimentNames] = useState([]);
-    const [experimentName, setExperimentName] = useState(null);
     const [experimentTypes, setExperimentTypes] = useState([]); //Fetching the experiment types from the JSON and setting the initial state
-    const [selectedExperimentType, setSelectedExperimentType] = useState("");
     const [uploadedFileName, setUploadedFileName] = useState();
-    const [uploadedFile, setUploadedFile] = useState();
     const [isFileUploaded, setIsFileUploaded] = useState(false);
     const [showResult, setShowResult] = useState(false);
     const [targetAlgorithms, setTargetAlgorithms] = useState([]); //Initial state is null, based on experiment type selection, it will be updated
-    const [selectedAlgorithm, setSelectedAlgorithm] = useState();
     const [targetVariables, setTargetVariables] = useState([]);
-    const [selectedTargetVariable, setSelectedTargetVariable] = useState("");
+    const [experimentResult, setExperimentResult] = useState({});
+    const [submitError, setSubmitError] = useState(null);
 
     const schema = Yup.object().shape({
-        preferredExpName: Yup.string().required('Experiment name should be provided').test('nameValidation', "The name already exists!", val => existingExperimentNames.indexOf(val) === -1),
-        chosenExperimentType: Yup.string().required('Experiment type should be selected'),
-        chosenAlgorithm: Yup.string().required('An algorithm should be selected'),
-        uploadDataset: Yup.mixed().required('File is required'),
+        experimentName: Yup.string().required('Experiment name should be provided').test('nameValidation', "The name already exists!", val => existingExperimentNames.indexOf(val) === -1),
+        experimentType: Yup.string().required('Experiment type should be selected'),
+        algorithmName: Yup.string().required('An algorithm should be selected'),
         targetVariable: Yup.string().required('A target variable should be selected'),
-
+        uploadedDataset: Yup.mixed().required('File is required'),
     });
 
-    const defaultValues = {
-        preferredExpName: '',
-        chosenExperimentType: '',
-        chosenAlgorithm: '',
-        uploadDataset: '',
-        targetVariable: '',
-    };
+    const [expData, setExpData] = useState(
+        {
+            experimentName: "",
+            experimentType: "",
+            algorithmName: "",
+            targetVariable: "",
+            uploadedDataset: ""
+        }
+    );
 
     const methods = useForm({
         resolver: yupResolver(schema),
         mode: "onChange",
-        defaultValues,
+        defaultValues: expData
     });
 
-    const {
-        handleSubmit,
-        formState: { errors },
-    } = methods;
-
     const onSubmit = async () => {
-        console.log(`default values--> ${JSON.stringify(defaultValues)}`);
-        await trainModel();
-        // props = await api("trainModel", selectedExperimentType ,"experimentResult.json","Error while uploading datasets",defaultValues);
-        // const response = trainModel(preferredExpName,targetVariable,);
-        setShowResult(true);
+        // const responseData = await trainModel(); // get the response data
+        // setShowResult(true);
+        // setExperimentResult(responseData);
+        try {
+            const responseData = await trainModel();
+            if (responseData === "error") {
+                setSubmitError("Error occurred during model training, check the input data");
+            }
+            else {
+                setSubmitError(null);
+                setShowResult(true);
+                setExperimentResult(responseData);
+            }
+        } catch (error) {
+            console.log(`error--${JSON.stringify(error)}`);
+            setSubmitError("Error occurred during model training, check the input data");
+        }
     };
 
+    console.log(submitError)
     async function trainModel() {
-        console.log(`train model ---> request payload -- experimentName: ${experimentName} target_variable: ${selectedTargetVariable}, algorithm_name: ${selectedAlgorithm}, selectedExperimentType: ${selectedExperimentType} `);
         const response = await api(URLPathConstants.TRAIN_MODEL_CLASSIFICATION, {
-            method: 'post',
-            body: {
-                "experiment_name": experimentName,
-                "target_variable": selectedTargetVariable,
-                "algorithm_name": selectedAlgorithm,
-                "experiment_type": selectedExperimentType
+            method: 'POST',
+            data: {
+                "experiment_name": expData.experimentName,
+                "target_variable": expData.targetVariable,
+                "algorithm_name": expData.algorithmName,
+                "experiment_type": expData.experimentType
             },
         });
+        return response; // return the response data
     }
 
     async function uploadCSV(file) {
         let formData = new FormData();
         formData.append('file', file);
         const response = await api(URLPathConstants.UPLOAD_CSV_CLASSIFICATION, {
-            method: "post",
+            method: "POST",
             headers: { "Content-Type": "multipart/form-data" },
             data: formData
         });
         updateTargetAttributes(response);
         if (response) {
             setIsFileUploaded(true);
-            // setTargetVariables(OptionsCreator(response["column_names"]));
         }
-        // setTargetVariables(targetAttributes);
     }
 
     async function fetchExperimentList() {
@@ -115,36 +116,36 @@ const NewExperimentForm = ({ color = 'primary', sx, algorithms, updateAlgorithms
     }, [algorithms]);
 
     useEffect(() => {
+        if (expData.experimentType)
+            setTargetAlgorithms(OptionsCreator(algorithms[expData.experimentType]));
+    }, [expData.experimentType]);
+
+    useEffect(() => {
         fetchExperimentList();
         fetchAlgorithms();
     }, [])
 
     const handleFileUpload = (event) => {
-        setUploadedFile(event.target.files[0]);
+        console.log(`--Event--uploadedDataSet-- ${event.target.name} `)
+        handleInput(event);
+        // setUploadedFile(event.target.files[0]);
         uploadCSV(event.target.files[0]);
         setUploadedFileName(event.target.files[0].name);
     };
 
-    const handleExpTypeSelection = (event) => {
-        setSelectedExperimentType(event.target.innerText);
-        setTargetAlgorithms(OptionsCreator(algorithms[event.target.innerText]));
-    };
+    const handleInput = (event) => {
+        const { name, value } = event.target
 
-    const handleExpNameSelection = (event) => {
-        setExperimentName(event.target.innerText);
-    };
+        setExpData(prevState => ({
+            ...prevState,
+            [name]: value
+        }));
 
-    const handleAlgorithmSelection = (event) => {
-        setSelectedAlgorithm(event.target.innerText);
     };
-
-    const handleTargetVariableSelection = (event) => {
-        setSelectedTargetVariable(event.target.innerText);
-    };
-
     return (
         <Card
             sx={{
+                // bgcolor: "lightgray",
                 py: 5,
                 boxShadow: 0,
                 paddingLeft: 3,
@@ -155,20 +156,20 @@ const NewExperimentForm = ({ color = 'primary', sx, algorithms, updateAlgorithms
             {!showResult ?
                 <Grid container spacing={3}>
                     <Grid item xs={12} md={6} lg={8}>
-                        <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
+                        <FormProvider methods={methods} onSubmit={methods.handleSubmit(onSubmit)}>
                             <Stack direction="column" spacing={3}>
-                                <RHFTextField name="preferredExpName" label="Preferred experiment name" onClick={handleExpNameSelection} />
-                                <RHFDropdown name="chosenExperimentType" label="Choose experiment type" options={experimentTypes || []} onClick={handleExpTypeSelection} />
-                                <RHFDropdown name="chosenAlgorithm" label="Select the algorithm" options={targetAlgorithms || []} onClick={handleAlgorithmSelection} />
-                                <Button name="uploadDataset" variant="outlined" component="label">
+                                <Button variant="outlined" component="label">
                                     Upload dataset as CSV
-                                    <input hidden type={"file"} accept={".csv"} onChange={handleFileUpload} />
+                                    <input hidden name="uploadedDataset" type={"file"} accept={".csv"} onChange={handleFileUpload} />
                                 </Button>
                                 {isFileUploaded ?
                                     <Typography variant="body1" sx={{ mb: 5 }}> File: {uploadedFileName} uploaded successfully</Typography>
                                     : null}
-                                <RHFDropdown name="targetVariable" label="Select a target variable" options={targetVariables || []} onClick={handleTargetVariableSelection} />
-                                <Button variant="contained" color="primary" onClick={handleSubmit(onSubmit)}>
+                                <RHFTextField name="experimentName" label="Preferred experiment name" onBlur={handleInput} />
+                                <RHFDropdown name="experimentType" label="Select a experiment type" options={experimentTypes || []} onBlur={handleInput} />
+                                <RHFDropdown name="algorithmName" label="Select a algorithm" options={targetAlgorithms || []} onBlur={handleInput} />
+                                <RHFDropdown name="targetVariable" label="Select a target variable" options={targetVariables || []} onBlur={handleInput} />
+                                <Button variant="contained" color="primary" type="submit">
                                     Train Model
                                 </Button>
                             </Stack>
@@ -176,14 +177,26 @@ const NewExperimentForm = ({ color = 'primary', sx, algorithms, updateAlgorithms
                     </Grid>
                 </Grid>
                 : null}
-            {showResult ?
-                <Grid container spacing={3}>
+            {submitError && (
+                <Grid container spacing={5}>
                     <Grid item xs={12} md={6} lg={8}>
-                        <ExperimentResult />
+                        <Typography color="error" variant="h5">
+                            {submitError}
+                        </Typography>
                     </Grid>
                 </Grid>
-                : null}
-        </Card>
+            )
+            }
+            {
+                showResult ?
+                    <Grid container spacing={3}>
+                        <Grid item xs={12} md={6} lg={8}>
+                            <ExperimentResult experimentResult={experimentResult} />
+                        </Grid>
+                    </Grid>
+                    : null
+            }
+        </Card >
     );
 };
 
@@ -193,8 +206,8 @@ NewExperimentForm.propTypes = {
 };
 
 const mapStateToProps = (state) => ({
-    algorithms: state.modelTrainingReducer.algorithms,
-    targetAttributes: state.modelTrainingReducer.targetAttributes,
+    algorithms: state.appReducer.algorithms,
+    targetAttributes: state.appReducer.targetAttributes,
 })
 
 const mapDispatchToProps = (dispatch) => {

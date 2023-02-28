@@ -9,13 +9,14 @@ export default async function Api(path, payload) {
   // const BACKEND_PORT_GET = 5000;
   // const BACKEND_PORT_POST = 5001;
   const FINAL_PAYLOAD = { ...payload, url: `${window.location.protocol}//${HOST}:${PORT}/${path}` }
-  console.log(`Final Payload --> ${FINAL_PAYLOAD}`)
+  console.log(`Final Payload --> ${JSON.stringify(FINAL_PAYLOAD)}`)
   return axios(FINAL_PAYLOAD)
     .then(function (response) {
       return response.data;
     })
     .catch(function (error) {
       console.log(error);
+      return "error";
     });
 }
 

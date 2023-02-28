@@ -14,3 +14,19 @@ export const ExperimentNames = (experimentsList) => {
     return tempArr;
 
 }
+
+export const FormatTimestamp = (timestamp) => {
+    const dateObj = new Date(timestamp);
+    const year = dateObj.getFullYear();
+    const month = dateObj.getMonth() + 1;
+    const date = dateObj.getDate();
+    const hours = dateObj.getHours();
+    const minutes = dateObj.getMinutes();
+    const seconds = dateObj.getSeconds();
+
+    const formattedDate = `${date}/${month}/${year}`;
+    const formattedTime = `${hours}:${minutes}:${seconds}`;
+
+    return `${formattedDate} ${formattedTime}`;
+}
+

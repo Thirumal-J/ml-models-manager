@@ -1,11 +1,11 @@
 import { combineReducers } from "redux";
 
-import dashboardReducer from "./dashboardReducer";
-import modelTrainingReducer from "./modelTrainingReducer";
+// import dashboardReducer from "./dashboardReducer";
+import appReducer from "./appReducer";
 
 export default combineReducers({
-    dashboardReducer,
-    modelTrainingReducer,
+    // dashboardReducer,
+    appReducer,
     // experimentsListReducer,
     // deployedModelsReducer
 });

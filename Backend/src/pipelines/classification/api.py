@@ -114,7 +114,8 @@ def save_file(request):
 @app.route("/" + appConf.CLASSIFICATION + appConf.URI_TRAIN_MODEL, methods=["POST"])
 def train_model():
     try:
-        input = json.loads(request.data)
+        print(f"inside train model api")
+        input = request.get_json()
         print(f"input--> {input}")
         # Create MLflow Experiment, create a run and log all the results
         # Create Experiment
@@ -124,18 +125,26 @@ def train_model():
             "experiment_type": input["experiment_type"],
             "target_variable": input["target_variable"],
         }
+        print(f"Dataset path--{target_dataset_path}")
         mlflow.end_run()
         experiment_id = mlflow.create_experiment(input["experiment_name"], tags=tags)
-        input["version"] = "0"
         input["experiment_id"] = experiment_id
         # input["target_dataset_path"] = target_dataset_path
         user_id = os.environ.get("USER", os.environ.get("USERNAME"))
         run_tags = []
 
-        return create_mlflow_run(input, run_tags)
+        response = create_mlflow_run(input, run_tags)
+        return jsonify(response), 200
+
+    except KeyError as e:
+        error_message = f"Missing required parameter: {e.args[0]}"
+        response = {"status": "error", "message": error_message}
+        return jsonify(response), 400
+
     except Exception as e:
-        print(f"Error occurred--> {e}")
-        return jsonify("{msg:'model training error, try again'}")
+        error_message = f"An error occurred while processing the request: {str(e)}"
+        response = {"status": "error", "message": error_message}
+        return jsonify(response), 500
 
 
 # Retrains the model, updates existing mlflow experiment, creates a new run within that experiment
@@ -154,14 +163,16 @@ def re_train_model():
         return create_mlflow_run(input, run_tags)
     except Exception as e:
         print(f"Error occurred--> {e}")
-        return jsonify("{msg:'model re-training error, try again'}")
+        return jsonify({"msg": "model re-training error, try again", "status": "error"})
 
 
 def create_mlflow_run(input, run_tags):
     mlflow.start_run(
         experiment_id=input["experiment_id"],
-        run_name=input["version_name"],
-        description=input["description"],
+        run_name=input["experiment_name"]
+        + "_"
+        + getAbbreviatedName(input["algorithm_name"]),
+        # description=input["description"],
         tags=run_tags,
     )
 
@@ -188,6 +199,14 @@ def create_mlflow_run(input, run_tags):
     mlflow.end_run()
     run = mlflow.get_run(run.info.run_id)
     return run.to_dictionary()
+
+
+def getAbbreviatedName(input_string):
+    words = input_string.split()
+    output = ""
+    for word in words:
+        output += word[0].upper()
+    return output
 
 
 def get_model_results(
@@ -226,7 +245,7 @@ def get_model_results(
     )
     TN, FP, FN, TP = get_confusion_matrix_values(y_test, predicted_result)
     result = {
-        "Acccuarcy": accuracy_score_value,
+        "Accuarcy": accuracy_score_value,
         "True Negative": str(TN),
         "False Positive": str(FP),
         "False Negative": str(FN),

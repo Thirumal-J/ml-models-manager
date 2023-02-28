@@ -1,7 +1,5 @@
 // import { faker } from '@faker-js/faker';
-import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { connect } from 'react-redux';
+import React, { useState } from 'react';
 
 
 // @mui
@@ -11,9 +9,6 @@ import { Grid, Container, Typography, Box, Button, Stack } from '@mui/material';
 import Page from '../../components/Page';
 import NewExperimentForm from './newExperimentForm';
 import ExistingExperimentForm from './existingExperimentForm';
-import api from '../../services/api';
-import { URLPathConstants } from '../../utils/constants';
-import { UPDATE_ALGORITHMS, UPDATE_EXPERIMENT_LIST } from '../../core/actions';
 
 function ModelTraining() {
   const theme = useTheme();
@@ -31,17 +26,9 @@ function ModelTraining() {
     setNewExperimentSelected(false);
   };
 
-  // async function fetchAlgorithms() {
-  //   const response = await api(URLPathConstants.FETCH_ALGORITHMS, { method: "get" });
-  //   updateAlgorithms(response);
-  // }
-
-  // useEffect(() => {
-  //   fetchAlgorithms();
-  // }, []);
 
   return (
-    <Page title="Model Training">
+    <Page variant="h4" color="primary" title="Model Training">
       <Container maxWidth="xl">
         <Typography variant="h4" sx={{ mb: 5 }}>
           Model Training
@@ -75,20 +62,4 @@ function ModelTraining() {
 }
 
 
-// const mapStateToProps = (state) => ({
-//   algorithms: state.modelTrainingReducer.algorithms
-// })
-
-// const mapDispatchToProps = (dispatch) => {
-//   return {
-//     updateAlgorithms: (payload) => {
-//       dispatch({
-//         type: UPDATE_ALGORITHMS,
-//         payload
-//       })
-//     }
-//   }
-// }
-
-// export default connect(mapStateToProps, mapDispatchToProps)(ModelTraining);
 export default ModelTraining;

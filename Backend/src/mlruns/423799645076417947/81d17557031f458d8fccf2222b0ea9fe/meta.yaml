@@ -1,0 +1,15 @@
+artifact_uri: file:///home/thiruaash/ws/ml-models-manager/Backend/src/mlruns/423799645076417947/81d17557031f458d8fccf2222b0ea9fe/artifacts
+end_time: 1677542170965
+entry_point_name: ''
+experiment_id: '423799645076417947'
+lifecycle_stage: active
+run_id: 81d17557031f458d8fccf2222b0ea9fe
+run_name: Scania-Experiment-2_DTC
+run_uuid: 81d17557031f458d8fccf2222b0ea9fe
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1677541721602
+status: 3
+tags: []
+user_id: thiruaash

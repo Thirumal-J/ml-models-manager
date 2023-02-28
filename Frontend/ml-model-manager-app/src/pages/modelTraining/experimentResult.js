@@ -1,17 +1,8 @@
 import React from 'react';
-import * as Yup from 'yup';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTheme } from '@mui/material/styles';
-import { useForm } from 'react-hook-form';
-import { Typography, Container, Card, Box, Button, Stack, Grid, Table, TableBody, TableContainer, TableRow, TableCell, TableHead, Paper } from '@mui/material';
-import { yupResolver } from '@hookform/resolvers/yup';
+import { Typography, Container, Grid, Card, Box, Table, TableBody, TableContainer, TableRow, TableCell, TableHead, Paper } from '@mui/material';
+import { FormatTimestamp } from '../../utils';
 
-import { FormProvider, RHFTextField, RHFDropdown } from '../../components/hook-form';
-import experimentResultJSON from '../../services/json/experimentResult.json';
-
-const ExperimentResult = () => {
-    const navigate = useNavigate();
+const ExperimentResult = ({ experimentResult }) => {
 
     return (
         <Container maxWidth="xl">
@@ -21,7 +12,7 @@ const ExperimentResult = () => {
             </Typography>
             <Card
                 sx={{
-                    bgcolor: 'background.paper',
+                    bgcolor: 'lightgray',
                     boxShadow: 1,
                     borderRadius: 2,
                     p: 2,
@@ -37,10 +28,9 @@ const ExperimentResult = () => {
                     <Table aria-label="simple table">
                         <TableBody>
                             <h3><TableHead>METRICS</TableHead></h3>
-                            {Object.entries(experimentResultJSON.data.metrics).map(([key, value], i) => (
+                            {Object.entries(experimentResult.data.metrics).map(([key, value], i) => (
                                 <TableRow
                                     key={i}
-                                // sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                 >
                                     <TableCell component="th" scope="row">{key}</TableCell>
                                     <TableCell align="right">{value}</TableCell>
@@ -49,13 +39,13 @@ const ExperimentResult = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
-
             </Card>
-
+            <br />
+            <br />
 
             <Card
                 sx={{
-                    bgcolor: 'background.paper',
+                    bgcolor: 'lightgray',
                     boxShadow: 1,
                     borderRadius: 2,
                     p: 2,
@@ -70,8 +60,8 @@ const ExperimentResult = () => {
                 <TableContainer component={Box}>
                     <Table aria-label="simple table">
                         <TableBody>
-                            <h3><TableHead>METRICS</TableHead></h3>
-                            {Object.entries(experimentResultJSON.data.metrics).map(([key, value], i) => (
+                            <h3><TableHead>PARAMETERS USED</TableHead></h3>
+                            {Object.entries(experimentResult.data.params).map(([key, value], i) => (
                                 <TableRow
                                     key={i}
                                 // sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -84,10 +74,12 @@ const ExperimentResult = () => {
                     </Table>
                 </TableContainer>
             </Card>
+            <br />
+            <br />
 
             <Card
                 sx={{
-                    bgcolor: 'background.paper',
+                    bgcolor: 'lightgray',
                     boxShadow: 1,
                     borderRadius: 2,
                     p: 2,
@@ -102,8 +94,8 @@ const ExperimentResult = () => {
                 <TableContainer component={Box}>
                     <Table aria-label="simple table">
                         <TableBody>
-                            <h3><TableHead>METRICS</TableHead></h3>
-                            {Object.entries(experimentResultJSON.data.metrics).map(([key, value], i) => (
+                            <h3><TableHead>EXPERIMENT DETAILS</TableHead></h3>
+                            {/* {Object.entries(experimentResult.data.metrics).map(([key, value], i) => (
                                 <TableRow
                                     key={i}
                                 // sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -111,12 +103,31 @@ const ExperimentResult = () => {
                                     <TableCell component="th" scope="row">{key}</TableCell>
                                     <TableCell align="right">{value}</TableCell>
                                 </TableRow>
-                            ))}
+                            ))} */}
+                            <TableRow>
+                                <TableCell component="th" scope="row">Experiment Id</TableCell>
+                                <TableCell align="right">{experimentResult.info.experiment_id}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell component="th" scope="row">Run Id</TableCell>
+                                <TableCell align="right">{experimentResult.info.run_id}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell component="th" scope="row">Start Time</TableCell>
+                                <TableCell align="right">{FormatTimestamp(experimentResult.info.start_time)}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell component="th" scope="row">End Time</TableCell>
+                                <TableCell align="right">{FormatTimestamp(experimentResult.info.end_time)}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell component="th" scope="row">User Id</TableCell>
+                                <TableCell align="right">{experimentResult.info.user_id}</TableCell>
+                            </TableRow>
                         </TableBody>
                     </Table>
                 </TableContainer>
             </Card>
-            {/* </Grid> */}
         </Container >
     );
 };
