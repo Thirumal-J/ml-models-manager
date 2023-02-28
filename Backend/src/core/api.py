@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import pickle
 
 print(
     f"\n<=============================== CORE API STARTED ===============================>"
@@ -142,7 +143,7 @@ def runs_in_experiment():
 
 
 # Register Model
-@app.route(appConf.URI_MLFLOW + appConf.URI_REGISTER_MODEL, methods=["POST"])
+@app.route(appConf.URI_MLFLOW + appConf.URI_DEPLOY_MODEL, methods=["POST"])
 def register_model():
 
     try:
@@ -223,7 +224,35 @@ def get_deployed_models():
         return jsonify(deployed_models)
     except Exception as e:
         print(f"Error occurred--> {e}")
-        return jsonify({"msg": "Sorry, unable to retrieve all deployed models"})
+        return jsonify(
+            {"msg": "Sorry, unable to retrieve all deployed models", "status": "error"}
+        )
+
+
+@app.route(appConf.URI_MLFLOW + appConf.URI_PREDICT, methods=["POST"])
+def predict():
+    try:
+        model_registry_abs_path = utils.getModelRegistryAbsPath()
+        # Load model from run_id
+        # run_id = request.json["run_id"]
+        exp_id = request.json["exp_id"]
+        model_file = os.path.join(model_registry_abs_path, exp_id, "model.pkl")
+        with open(model_file, "rb") as f:
+            model = pickle.load(f)
+
+        # Load data from request
+        data = request.json["data"]
+
+        # Make predictions using model
+        predictions = model.predict(data)
+
+        # Return results
+        return jsonify({"predictions": predictions.tolist()})
+    except Exception as e:
+        print(f"Error occurred--> {e}")
+        return jsonify(
+            {"msg": "Sorry, unable to retrieve all deployed models", "status": "error"}
+        )
 
 
 def setMLflowTrackingURI():
@@ -266,34 +295,34 @@ def transform_classification_data(data):
     return transformed_data
 
 
-@app.route(appConf.URI_MLFLOW + "/deploy-model", methods=["POST"])
-def deploy_model():
-    # Get experiment run ID from request data
-    input = json.loads(request.data)
-    run_id = input["run_id"]
+# @app.route(appConf.URI_MLFLOW + "/deploy-model", methods=["POST"])
+# def deploy_model():
+#     # Get experiment run ID from request data
+#     input = json.loads(request.data)
+#     run_id = input["run_id"]
 
-    # Deploy model using mlflow models serve command
-    process = subprocess.Popen(
-        [
-            "mlflow",
-            "models",
-            "serve",
-            "-m",
-            f"runs:/model/{run_id}/model",
-            "-p",
-            "1234",
-        ],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    stdout, stderr = process.communicate()
+#     # Deploy model using mlflow models serve command
+#     process = subprocess.Popen(
+#         [
+#             "mlflow",
+#             "models",
+#             "serve",
+#             "-m",
+#             f"runs:/model/{run_id}/model",
+#             "-p",
+#             "1234",
+#         ],
+#         stdout=subprocess.PIPE,
+#         stderr=subprocess.PIPE,
+#     )
+#     stdout, stderr = process.communicate()
 
-    if process.returncode == 0:
-        # Deployment succeeded
-        return jsonify({"status": "success", "message": stdout.decode("utf-8")})
-    else:
-        # Deployment failed
-        return jsonify({"status": "error", "message": stderr.decode("utf-8")})
+#     if process.returncode == 0:
+#         # Deployment succeeded
+#         return jsonify({"status": "success", "message": stdout.decode("utf-8")})
+#     else:
+#         # Deployment failed
+#         return jsonify({"status": "error", "message": stderr.decode("utf-8")})
 
 
 if __name__ == "__main__":

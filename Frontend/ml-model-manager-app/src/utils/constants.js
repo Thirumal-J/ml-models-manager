@@ -6,7 +6,7 @@ export const URLPathConstants = {
     FETCH_EXPERIMENT_RUNS: "mlflow/experiment/runs",
     FETCH_EXPERIMENT_LIST: "mlflow/experiment-list",
     FETCH_DEPLOYED_MODELS: "mlflow/deployed-models",
-    FETCH_REGISTERED_MODELS: "mlflow/register-model",
+    DEPLOY_MODEL: "mlflow/deploy-model",
     FETCH_RUN_BY_ID: "mlflow/run",
     FETCH_EXPERIMENT_BY_ID: "mlflow/experiment",
     CLASSIFICATION: "classification",

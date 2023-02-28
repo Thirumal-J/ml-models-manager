@@ -14,8 +14,8 @@ TEMP_PICKLE_FILE_LOCATION = "/temp"
 ML_MODEL_REGISTRY_LOCATION = "/model-registry"
 
 
-#---------------------------------------------------------------------------------------------------------------------------------#
-#---------------------------------------------------------------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------------------------------------------------------------#
 # Routes
 
 URI_HELLO = "/hello"
@@ -27,13 +27,13 @@ URI_DELETE_EXPERIMENT = "/delete-experiment"
 URI_EXPERIMENT_RUNS = "/experiment/runs"
 URI_TRAIN_MODEL = "/train-model"
 URI_RETRAIN_MODEL = "/re-train-model"
-URI_REGISTER_MODEL = "/register-model"
+URI_DEPLOY_MODEL = "/deploy-model"
 URI_RUN = "/run"
 URI_DEPLOYED_MODELS = "/deployed-models"
+URI_PREDICT = "/predict"
 
-
-#---------------------------------------------------------------------------------------------------------------------------------#
-#---------------------------------------------------------------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------------------------------------------------------------#
 # Pipeline Configurations
 
 # Core MLflow
@@ -47,7 +47,12 @@ DECISION_TREE_CLASSIFICATION = "Decision Tree Classification"
 K_NEAREST_NEIGHBOURS_CLASSIFICATION = "K-Nearest Neighbours Classification"
 NAIVE_BAYES_CLASSIFICATION = "Naive Bayes Classification"
 RANDOM_FOREST_CLASSIFICATION = "Random Forest Classification"
-CLASSIFICATION_ALGORITHMS = [DECISION_TREE_CLASSIFICATION,K_NEAREST_NEIGHBOURS_CLASSIFICATION,NAIVE_BAYES_CLASSIFICATION,RANDOM_FOREST_CLASSIFICATION]
+CLASSIFICATION_ALGORITHMS = [
+    DECISION_TREE_CLASSIFICATION,
+    K_NEAREST_NEIGHBOURS_CLASSIFICATION,
+    NAIVE_BAYES_CLASSIFICATION,
+    RANDOM_FOREST_CLASSIFICATION,
+]
 
 # Regression
 PORT_REGRESSION = 5002
@@ -56,19 +61,24 @@ SIMPLE_LINEAR_REGRESSION = "Simple Linear Regression"
 SUPPORT_VECTOR_REGRESSION = "Support Vector Regression"
 DECISION_TREE_REGRESSION = "Decision Tree Regression"
 RANDOM_FOREST_REGRESSION = "Random Forest Regression"
-REGRESSION_ALGORITHMS = [SIMPLE_LINEAR_REGRESSION,SUPPORT_VECTOR_REGRESSION,DECISION_TREE_REGRESSION,RANDOM_FOREST_REGRESSION]
+REGRESSION_ALGORITHMS = [
+    SIMPLE_LINEAR_REGRESSION,
+    SUPPORT_VECTOR_REGRESSION,
+    DECISION_TREE_REGRESSION,
+    RANDOM_FOREST_REGRESSION,
+]
 
 # Scania
 PORT_SCANIA = 5003
 URI_SCANIA = "scania"
 
 
-#---------------------------------------------------------------------------------------------------------------------------------#
-#---------------------------------------------------------------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------------------------------------------------------------#
 
 
 # CORE CONSTANTS
 ALGORITHMS = {
-    CLASSIFICATION : CLASSIFICATION_ALGORITHMS,
-    REGRESSION : REGRESSION_ALGORITHMS
+    CLASSIFICATION: CLASSIFICATION_ALGORITHMS,
+    REGRESSION: REGRESSION_ALGORITHMS,
 }
