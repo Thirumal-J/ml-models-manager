@@ -1,0 +1,4 @@
+artifact_location: file:///home/operation/ML_Software_Development/Backend/src/mlruns/1
+experiment_id: '1'
+lifecycle_stage: active
+name: Scania-2

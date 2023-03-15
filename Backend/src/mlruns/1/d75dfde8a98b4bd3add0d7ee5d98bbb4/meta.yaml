@@ -1,0 +1,15 @@
+artifact_uri: file:///home/operation/ML_Software_Development/Backend/src/mlruns/1/d75dfde8a98b4bd3add0d7ee5d98bbb4/artifacts
+end_time: 1678793022657
+entry_point_name: ''
+experiment_id: '1'
+lifecycle_stage: active
+name: ''
+run_id: d75dfde8a98b4bd3add0d7ee5d98bbb4
+run_uuid: d75dfde8a98b4bd3add0d7ee5d98bbb4
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1678793014411
+status: 3
+tags: []
+user_id: operation

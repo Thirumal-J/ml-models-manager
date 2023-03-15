@@ -274,7 +274,7 @@ def transform_classification_data(data):
         d["end_time"] = data["end_time"][i]
         d["experiment_id"] = data["experiment_id"][i]
         d["metrics"] = {
-            "Accuarcy": data["metrics.Accuarcy"][i],
+            "Accuracy": data["metrics.Accuracy"][i],
             "F1 Score": data["metrics.F1 Score"][i],
             "False Negative": data["metrics.False Negative"][i],
             "False Positive": data["metrics.False Positive"][i],

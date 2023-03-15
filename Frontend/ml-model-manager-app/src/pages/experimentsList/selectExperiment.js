@@ -112,7 +112,7 @@ const SelectExperiment = ({ color = 'primary', sx, experimentList, updateExperim
                                 <Button variant="contained" color="primary" type="submit">
                                     Confirm
                                 </Button>
-                                {experimentRuns}
+                                {/* {experimentRuns} */}
                             </Stack>
                         </FormProvider>
                     </Grid>

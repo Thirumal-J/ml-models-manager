@@ -7,6 +7,8 @@ import { Grid, Typography } from '@mui/material';
 import DynamicTable from '../../components/DynamicTable1';
 import { URLPathConstants } from '../../utils/constants';
 import api from '../../services/api';
+import DeployedModelsTable from './DeployedModelsTable';
+import PredictionTable from './PredictionTable';
 
 
 const ViewDeployedModels = () => {
@@ -50,7 +52,7 @@ const ViewDeployedModels = () => {
             )
             }
             {deployedModels.length > 0 ?
-                <DynamicTable title="DeployedModels" data={deployedModels} />
+                <PredictionTable title="Deployed Models" data={deployedModels} />
                 :
                 <Typography variant="h4" color="primary">No deployed models found</Typography>
             }

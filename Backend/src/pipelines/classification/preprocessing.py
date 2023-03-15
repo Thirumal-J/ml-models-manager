@@ -10,10 +10,21 @@ from sklearn.impute import SimpleImputer
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, f1_score, precision_score, recall_score, mean_squared_error, r2_score, mean_absolute_error
+from sklearn.metrics import (
+    accuracy_score,
+    confusion_matrix,
+    classification_report,
+    f1_score,
+    precision_score,
+    recall_score,
+    mean_squared_error,
+    r2_score,
+    mean_absolute_error,
+)
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
+
 
 def drop_correlated(df, corr_threshold=0.95):
     # Create correlation matrix
@@ -23,7 +34,9 @@ def drop_correlated(df, corr_threshold=0.95):
     upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(np.bool))
 
     # Find the columns with a correlation greater than the threshold
-    drop_cols = [column for column in upper.columns if any(upper[column] > corr_threshold)]
+    drop_cols = [
+        column for column in upper.columns if any(upper[column] > corr_threshold)
+    ]
 
     # return columns to drop
     return drop_cols
@@ -60,8 +73,9 @@ def sample_SMOTEENN(df_X, df_y):
     sme = SMOTEENN(
         sampling_strategy=1,
         smote=SMOTE(sampling_strategy=0.3, k_neighbors=3, n_jobs=1, random_state=1),
-        enn=EditedNearestNeighbours(sampling_strategy='auto', n_neighbors=5, n_jobs=1),
-        random_state=1)
+        enn=EditedNearestNeighbours(sampling_strategy="auto", n_neighbors=5, n_jobs=1),
+        random_state=1,
+    )
 
     # Do resampling
     X_res, y_res = sme.fit_resample(df_X, df_y)
@@ -74,18 +88,26 @@ def sample_SMOTEENN(df_X, df_y):
 
 def preprocess_scania(raw_data, target_variable, test_size):
     # Encode class labels as integers
-    raw_data[target_variable] = (raw_data[target_variable] == 'pos').astype('int')
+    raw_data[target_variable] = (raw_data[target_variable] == "pos").astype("int")
 
     # Pop labels
     y_raw = raw_data.pop(target_variable)
 
-    X_train, X_test, y_train, y_test = train_test_split(raw_data, y_raw, test_size=test_size, random_state=0,
-                                                        shuffle=True)
+    # Copy data to preserve column names
+    X_raw = raw_data.copy()
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        raw_data, y_raw, test_size=test_size, random_state=0, shuffle=True
+    )
 
     # Impute NaN's with mean values
-    nan_imputer = SimpleImputer(strategy='mean')
+    nan_imputer = SimpleImputer(strategy="mean")
     X_train = pd.DataFrame(nan_imputer.fit_transform(X_train))
     X_test = pd.DataFrame(nan_imputer.transform(X_test))
+
+    # Update column names after imputation
+    X_train.columns = X_raw.columns
+    X_test.columns = X_raw.columns
 
     # Drop constant columns
     const_columns = [col for col in X_train.columns if X_train[col].std() < 0.0000001]
@@ -96,6 +118,8 @@ def preprocess_scania(raw_data, target_variable, test_size):
     drop_cols = drop_correlated(X_train)
     X_train.drop(drop_cols, axis=1, inplace=True)
     X_test.drop(drop_cols, axis=1, inplace=True)
+
+    print(f"---before min max scaler---X_train---{X_train}")
 
     # Scaling the data between -1 and 1
     # Necessary for PCA, SVM, not with Trees, but the results shouldn't change
@@ -108,13 +132,23 @@ def preprocess_scania(raw_data, target_variable, test_size):
     X_train = pd.DataFrame(pca.fit_transform(X_train))
     X_test = pd.DataFrame(pca.transform(X_test))
 
+    # Update column names after PCA
+    pca_cols = [f"PCA_{i}" for i in range(X_train.shape[1])]
+    X_train.columns = pca_cols
+    X_test.columns = pca_cols
+
+    print(f"---X_train---{X_train}")
+
     return X_train, X_test, y_train, y_test
 
 
 def balance_scania(X_train_std_pca, y_train):
 
-    print('Before using over- and undersampling, we have {0} negatives and {1} positives in our Training Data'.format(
-        np.count_nonzero(y_train.values == 0), np.count_nonzero(y_train.values == 1)))
+    print(
+        "Before using over- and undersampling, we have {0} negatives and {1} positives in our Training Data".format(
+            np.count_nonzero(y_train.values == 0), np.count_nonzero(y_train.values == 1)
+        )
+    )
 
     # Oversampling of minority class
     X_train_smoteenn, y_train_smoteenn = sample_SMOTEENN(X_train_std_pca, y_train)
@@ -125,25 +159,75 @@ def balance_scania(X_train_std_pca, y_train):
     # Undersampling of majority class
     X_train_balanced, y_train_balanced = undersample(df_X_smoteenn, df_y_smoteenn)
 
-    print('After using over- and undersampling, we have {0} negatives and {1} positives in our Training Data'.format(
-        np.count_nonzero(y_train_balanced.values == 0), np.count_nonzero(y_train_balanced.values == 1)))
+    print(
+        "After using over- and undersampling, we have {0} negatives and {1} positives in our Training Data".format(
+            np.count_nonzero(y_train_balanced.values == 0),
+            np.count_nonzero(y_train_balanced.values == 1),
+        )
+    )
 
     # Shuffle again
-    X_train_balanced, y_train_balanced = shuffle(X_train_balanced, y_train_balanced, random_state=0)
+    X_train_balanced, y_train_balanced = shuffle(
+        X_train_balanced, y_train_balanced, random_state=0
+    )
 
     return X_train_balanced, y_train_balanced
 
+
 def scania_loading_and_preprocessing(datasetpath, target_variable, test_size=0.2):
     # Load datasets
-    raw_data = pd.read_csv(datasetpath,  na_values=["na"])
+    raw_data = pd.read_csv(datasetpath, na_values=["na"])
     # Preprocessing (NaN-Handling, drop constant features, drop highly correlated features, standardization, PCA)
-    X_train, X_test, y_train, y_test = preprocess_scania(raw_data,target_variable, test_size)
+    X_train, X_test, y_train, y_test = preprocess_scania(
+        raw_data, target_variable, test_size
+    )
 
     # Balance the training dataset using a combination of over- and undersampling
     X_train_bal, y_train_bal = balance_scania(X_train, y_train)
-    
+
     return X_train_bal, X_test, y_train_bal, y_test
+
 
 def get_confusion_matrix_values(y_true, predicted_result):
     cm = confusion_matrix(y_true, predicted_result)
-    return(cm[0][0], cm[0][1], cm[1][0], cm[1][1])
+    return (cm[0][0], cm[0][1], cm[1][0], cm[1][1])
+
+
+def get_prediction_preprocessing(raw_data):
+
+    print(f"inside preprocessing--")
+
+    # Copy data to preserve column names
+    X_raw = raw_data.copy()
+
+    # Impute NaN's with mean values
+    nan_imputer = SimpleImputer(strategy="mean")
+    raw_data = pd.DataFrame(nan_imputer.fit_transform(raw_data))
+
+    # Update column names after imputation
+    raw_data.columns = X_raw.columns
+
+    # Drop constant columns
+    const_columns = [col for col in raw_data.columns if raw_data[col].std() < 0.0000001]
+    raw_data.drop(const_columns, axis=1, inplace=True)
+
+    # Drop highly correlated columns / features
+    drop_cols = drop_correlated(raw_data)
+    raw_data.drop(drop_cols, axis=1, inplace=True)
+
+    # Scaling the data between -1 and 1
+    # Necessary for PCA, SVM, not with Trees, but the results shouldn't change
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    raw_data = pd.DataFrame(scaler.fit_transform(raw_data))
+
+    # Principal component analysis
+    pca = PCA(0.95)
+    raw_data = pd.DataFrame(pca.fit_transform(raw_data))
+
+    # Update column names after PCA
+    pca_cols = [f"PCA_{i}" for i in range(raw_data.shape[1])]
+    raw_data.columns = pca_cols
+
+    print(f"---end--raw_data---{raw_data.head(n=10)}")
+
+    return raw_data

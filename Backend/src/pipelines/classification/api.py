@@ -3,7 +3,7 @@ import os
 import sys
 from pathlib import Path
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file, url_for
 
 print(
     f"\n<=============================== CLASSIFICATION API STARTED ===============================>"
@@ -166,6 +166,70 @@ def re_train_model():
         return jsonify({"msg": "model re-training error, try again", "status": "error"})
 
 
+@app.route("/" + appConf.CLASSIFICATION + appConf.URI_PREDICT, methods=["POST"])
+def prediction():
+    try:
+        if request.files:
+            print(f"<--- Inside prediction method --> request.files--> {request.files}")
+            input_csv = request.files["file"]
+            experiment_id = request.form["experiment_id"]
+            run_id = request.form["run_id"]
+
+            model_registry_abs_path = utils.getModelRegistryAbsPath(parentDir)
+            deployed_model = (
+                f"{model_registry_abs_path}/{experiment_id}/{run_id}/model.pkl"
+            )
+
+            raw_data = pd.read_csv(input_csv)
+            preprocessed_data = preprocessing.get_prediction_preprocessing(raw_data)
+
+            print(f"preprocessed_data--{preprocessed_data}")
+            pickled_model = pickle.load(open(deployed_model, "rb"))
+            predicted_result = pickled_model.predict(preprocessed_data)
+
+            results_df = pd.DataFrame(predicted_result, columns=["prediction"])
+            results_df.to_csv("predictions.csv", index=False)
+            csv_url = url_for(
+                "download_csv", filename="predictions.csv", _external=True
+            )
+
+            # return send_file(
+            #     "predictions.csv",
+            #     mimetype="text/csv",
+            #     attachment_filename="predictions.csv",
+            #     as_attachment=True,
+            # )
+            response_data = {
+                "msg": "success",
+                "status": "success",
+                "csv_url": csv_url,
+            }
+
+            return jsonify(response_data)
+
+    except Exception as e:
+        print(f"Error occurred--> {e}")
+        return jsonify(
+            {"msg": "error occurred during prediction, try again", "status": "error"}
+        )
+
+
+@app.route("/download_csv/<filename>", methods=["GET"])
+def download_csv(filename):
+    try:
+        return send_file(
+            filename,
+            mimetype="text/csv",
+            attachment_filename=filename,
+            as_attachment=True,
+        )
+    except Exception as e:
+        print(f"Error occurred--> {e}")
+        return jsonify(
+            {"msg": "error occurred while downloading the CSV file", "status": "error"}
+        )
+
+
 def create_mlflow_run(input, run_tags):
     mlflow.start_run(
         experiment_id=input["experiment_id"],
@@ -190,8 +254,10 @@ def create_mlflow_run(input, run_tags):
         input["algorithm_name"], x_train_balanced, x_test, y_train_balanced, y_test
     )
 
+    print(f"x_train_balanced--{x_train_balanced}")
     mlflow.log_param("Algorithm Name", input["algorithm_name"])
     mlflow.log_param("Target Variable", input["target_variable"])
+    print(f"model_results--> {model_results}")
     log_metrics(model_results)
 
     # pickle_file_name = input['experiment_name'] + '_' + run.info.run_id + '.pkl'
@@ -240,20 +306,24 @@ def get_model_results(
     f1_score_value = f1_score(y_test, predicted_result)
     precision_score_value = precision_score(y_test, predicted_result)
     recall_score_value = recall_score(y_test, predicted_result)
-    accuracy_score_value = "{:.2f}".format(
-        accuracy_score(y_test, predicted_result) * 100
+    accuracy_score_value = float(
+        "{:.2f}".format(accuracy_score(y_test, predicted_result) * 100)
     )
+    print(
+        f"accuracy_score--{accuracy_score(y_test, predicted_result)}--- accuracy_score_value --{accuracy_score_value}"
+    )
+
     TN, FP, FN, TP = get_confusion_matrix_values(y_test, predicted_result)
     result = {
-        "Accuarcy": accuracy_score_value,
-        "True Negative": str(TN),
-        "False Positive": str(FP),
-        "False Negative": str(FN),
-        "True Positive": str(TP),
-        "F1 Score": str(f1_score_value),
-        "Precision Score": str(precision_score_value),
-        "Recall Score": str(recall_score_value),
-        "R2 Score": str(r2_score_value),
+        "Accuracy": accuracy_score_value,
+        "True Negative": float(TN),
+        "False Positive": float(FP),
+        "False Negative": float(FN),
+        "True Positive": float(TP),
+        "F1 Score": float(f1_score_value),
+        "Precision Score": float(precision_score_value),
+        "Recall Score": float(recall_score_value),
+        "R2 Score": float(r2_score_value),
     }
     return result
 
